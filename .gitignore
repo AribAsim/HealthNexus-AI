@@ -27,4 +27,4 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
-\stitch_smart_health_facility_orchestrator
+stitch_smart_health_facility_orchestrator/
