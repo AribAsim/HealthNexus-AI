@@ -2,6 +2,33 @@ import { useState, useEffect } from 'react';
 import { useHealthStore } from './store';
 import { askExecutiveAssistant } from './ai';
 
+const renderMarkdownLine = (line: string) => {
+  let displayLine = line;
+  let isBullet = false;
+  
+  if (displayLine.trim().startsWith('*')) {
+    displayLine = displayLine.replace(/^\s*\*\s*/, '• ');
+    isBullet = true;
+  } else if (displayLine.trim().startsWith('-')) {
+    displayLine = displayLine.replace(/^\s*-\s*/, '• ');
+    isBullet = true;
+  }
+  
+  const parts = displayLine.split('**');
+  const renderedText = parts.map((part, index) => {
+    if (index % 2 === 1) {
+      return <strong key={index} className="font-bold text-white">{part}</strong>;
+    }
+    return part;
+  });
+
+  return (
+    <span className={isBullet ? 'pl-1' : ''}>
+      {renderedText}
+    </span>
+  );
+};
+
 export default function App() {
   const {
     role,
@@ -192,7 +219,7 @@ export default function App() {
 
       {/* Offline Sync Success Banner */}
       {syncNotification && (
-        <div className="bg-green-700 text-white px-lg py-3 flex items-center justify-between shadow-md animate-fade-in border-b border-green-600 z-40">
+        <div className="bg-green-700 text-white md:pl-[272px] px-lg py-3 flex items-center justify-between shadow-md animate-fade-in border-b border-green-600 z-40">
           <div className="flex items-center space-x-3">
             <span className="material-symbols-outlined text-xl text-green-200 animate-bounce">check_circle</span>
             <span className="text-sm font-bold">{syncNotification}</span>
@@ -515,20 +542,37 @@ export default function App() {
                       <div className="text-white space-y-3">
                         {aiResponse.split('\n\n').map((paragraph, i) => {
                           if (paragraph.startsWith('###')) {
-                            return <h3 key={i} className="text-base font-extrabold text-white pb-1 border-b border-white/20 mb-2">{paragraph.replace('###', '').trim()}</h3>;
-                          }
-                          if (paragraph.includes('*')) {
                             return (
-                              <div key={i} className="space-y-1.5 pl-2 border-l-2 border-white/40">
-                                {paragraph.split('\n').map((line, j) => (
+                              <h3 key={i} className="text-sm font-bold text-white pb-1 border-b border-white/10 mb-2">
+                                {paragraph.replace('###', '').trim()}
+                              </h3>
+                            );
+                          }
+                          
+                          const lines = paragraph.split('\n');
+                          const hasList = lines.some(l => l.trim().startsWith('*') || l.trim().startsWith('-') || /^\d+\./.test(l.trim()));
+                          
+                          if (hasList) {
+                            return (
+                              <div key={i} className="space-y-1 pl-2 border-l border-white/20">
+                                {lines.map((line, j) => (
                                   <p key={j} className="text-xs text-slate-200">
-                                    {line.replace('*', '•').replace(/\*\*(.*?)\*\*/g, '$1')}
+                                    {renderMarkdownLine(line)}
                                   </p>
                                 ))}
                               </div>
                             );
                           }
-                          return <p key={i} className="text-xs text-slate-200">{paragraph}</p>;
+                          
+                          return (
+                            <p key={i} className="text-xs text-slate-200">
+                              {lines.map((line, j) => (
+                                <span key={j} className="block">
+                                  {renderMarkdownLine(line)}
+                                </span>
+                              ))}
+                            </p>
+                          );
                         })}
                       </div>
                     )}
