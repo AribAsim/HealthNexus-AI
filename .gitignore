@@ -28,3 +28,4 @@ dist-ssr
 *.sln
 *.sw?
 stitch_smart_health_facility_orchestrator/
+.agents/
