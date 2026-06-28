@@ -50,6 +50,28 @@ graph TD
 
 ---
 
+## 🖥️ Component Portals & Telemetry Screens
+
+### 📊 District Overview & AI Command Centre
+![District Overview](src/assets/screens/district_overview.png)
+
+### 📦 Drug Inventory & Smart Redistribution
+![Inventory & Forecasting](src/assets/screens/inventory_forecasting.png)
+
+### 🛏️ Bed Availability & ICU Monitor
+![Bed Management](src/assets/screens/bed_management.png)
+
+### 👥 Patient Flow & Triage Queue
+![Patient Flow](src/assets/screens/patient_flow.png)
+
+### 📋 Biometric Staff Roster
+![Staff Attendance](src/assets/screens/staff_attendance.png)
+
+### 🔬 Diagnostic IoT Labs Audit
+![Diagnostics Lab](src/assets/screens/diagnostics_lab.png)
+
+---
+
 ## 🛠️ Installation & Getting Started
 
 ### 1. Prerequisites
