@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>HealthNexus AI - Staff Attendance &amp; Rostering</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-secondary-container": "#54647a",
+                    "surface-container": "#ecedf6",
+                    "on-background": "#191c21",
+                    "secondary-container": "#d0e1fb",
+                    "outline": "#727783",
+                    "on-primary-container": "#c8daff",
+                    "on-secondary": "#ffffff",
+                    "on-secondary-fixed-variant": "#38485d",
+                    "on-primary-fixed-variant": "#00468c",
+                    "secondary-fixed": "#d3e4fe",
+                    "inverse-on-surface": "#eff0f8",
+                    "on-tertiary": "#ffffff",
+                    "on-tertiary-fixed-variant": "#444749",
+                    "on-primary-fixed": "#001b3d",
+                    "error-container": "#ffdad6",
+                    "surface-container-low": "#f2f3fb",
+                    "primary-fixed": "#d6e3ff",
+                    "on-primary": "#ffffff",
+                    "surface-dim": "#d8dae2",
+                    "secondary": "#505f76",
+                    "on-secondary-fixed": "#0b1c30",
+                    "on-surface-variant": "#424752",
+                    "primary-fixed-dim": "#a9c7ff",
+                    "inverse-primary": "#a9c7ff",
+                    "on-error": "#ffffff",
+                    "surface-container-high": "#e7e8f0",
+                    "background": "#f9f9ff",
+                    "surface-container-highest": "#e1e2ea",
+                    "on-surface": "#191c21",
+                    "primary": "#00478d",
+                    "surface-variant": "#e1e2ea",
+                    "surface-bright": "#f9f9ff",
+                    "surface-tint": "#005db6",
+                    "on-tertiary-container": "#d8dadc",
+                    "on-tertiary-fixed": "#191c1e",
+                    "on-error-container": "#93000a",
+                    "primary-container": "#005eb8",
+                    "outline-variant": "#c2c6d4",
+                    "tertiary-fixed": "#e0e3e5",
+                    "surface": "#f9f9ff",
+                    "error": "#ba1a1a",
+                    "inverse-surface": "#2e3037",
+                    "tertiary": "#45484a",
+                    "secondary-fixed-dim": "#b7c8e1",
+                    "tertiary-fixed-dim": "#c4c7c9",
+                    "tertiary-container": "#5d6062",
+                    "surface-container-lowest": "#ffffff"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "spacing": {
+                    "xl": "48px",
+                    "gutter": "16px",
+                    "md": "16px",
+                    "lg": "24px",
+                    "sm": "8px",
+                    "container-max": "1440px",
+                    "base": "4px",
+                    "xs": "4px"
+            },
+            "fontFamily": {
+                    "headline-sm": ["Inter"],
+                    "mono-data": ["JetBrains Mono"],
+                    "display-lg": ["Inter"],
+                    "body-lg": ["Inter"],
+                    "headline-md": ["Inter"],
+                    "body-sm": ["Inter"],
+                    "label-bold": ["Inter"],
+                    "body-md": ["Inter"]
+            },
+            "fontSize": {
+                    "headline-sm": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                    "mono-data": ["13px", {"lineHeight": "18px", "fontWeight": "500"}],
+                    "display-lg": ["36px", {"lineHeight": "44px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                    "body-sm": ["13px", {"lineHeight": "18px", "fontWeight": "400"}],
+                    "label-bold": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                    "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #c2c6d4;
+            border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #727783;
+        }
+        .glow-active {
+            box-shadow: 0 0 10px rgba(0, 71, 141, 0.2);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body-md">
+<!-- TopNavBar -->
+<header class="flex justify-between items-center w-full px-lg h-16 sticky top-0 z-50 bg-surface dark:bg-on-background border-b border-outline-variant dark:border-outline">
+<div class="flex items-center gap-md">
+<span class="font-headline-md text-headline-md font-bold text-primary dark:text-primary-fixed-dim">HealthNexus AI</span>
+<div class="hidden md:flex ml-lg gap-md">
+<a class="text-secondary dark:text-secondary-fixed-dim hover:bg-surface-container dark:hover:bg-surface-container-highest transition-colors px-md py-sm rounded cursor-pointer" href="#">English</a>
+<a class="text-secondary dark:text-secondary-fixed-dim hover:bg-surface-container dark:hover:bg-surface-container-highest transition-colors px-md py-sm rounded cursor-pointer" href="#">Hindi</a>
+<a class="text-secondary dark:text-secondary-fixed-dim hover:bg-surface-container dark:hover:bg-surface-container-highest transition-colors px-md py-sm rounded cursor-pointer" href="#">Regional</a>
+</div>
+</div>
+<div class="flex items-center gap-md">
+<button class="p-sm material-symbols-outlined text-primary dark:text-primary-fixed-dim hover:bg-surface-container transition-colors rounded-full" data-icon="notifications">notifications</button>
+<button class="p-sm material-symbols-outlined text-primary dark:text-primary-fixed-dim hover:bg-surface-container transition-colors rounded-full" data-icon="translate">translate</button>
+<div class="h-10 w-10 rounded-full overflow-hidden border border-outline-variant">
+<img class="h-full w-full object-cover" data-alt="A professional headshot of a senior medical administrator in a clinical setting, captured in soft, natural lighting. The subject is wearing a white medical coat over professional attire, looking directly at the camera with a confident yet approachable expression. The background is a clean, modern hospital corridor with soft blue and white tones, reflecting a state-of-the-art healthcare environment." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDzhIbffzWiJLBKOCcKvj7UeU4Wu36ncBj-B2C_vDD46xn_agAvqMlm0qSZ29Svq_Sh7q0NJvrHPp4Bd3P1Xjh0xqtJaRBDoUBWkhOLqqwOublEZktKvzCxemYGkk8xzcQsZlNZuijOkz9XelPgcrlBuXAVtUyYvnfoSAtN0kYpWPrDY8Lm_sW7RlkoT9sxExW1fCXbVOBVIf6d9rh-ZLSZTDw_RSyMGULICIJLdDXVA8KYVog47pJJSYc0B_no0-mGkifGTBSNzNo"/>
+</div>
+</div>
+</header>
+<!-- SideNavBar & Main Content -->
+<div class="flex min-h-[calc(100vh-64px)]">
+<!-- SideNavBar -->
+<aside class="hidden md:flex flex-col h-[calc(100vh-64px)] fixed left-0 top-16 w-64 bg-surface-container-low dark:bg-on-background border-r border-outline-variant dark:border-outline transition-all">
+<div class="p-lg">
+<div class="flex items-center gap-md mb-xl">
+<div class="w-10 h-10 bg-primary-container rounded flex items-center justify-center text-on-primary-container">
+<span class="material-symbols-outlined" data-icon="health_and_safety">health_and_safety</span>
+</div>
+<div>
+<h2 class="font-headline-sm text-headline-sm text-primary">Health Services</h2>
+<p class="text-on-surface-variant text-xs opacity-70">District Admin</p>
+</div>
+</div>
+<nav class="space-y-1">
+<a class="flex items-center gap-md px-md py-sm text-on-surface-variant hover:bg-surface-container-high transition-all rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span>District Dashboard</span>
+</a>
+<a class="flex items-center gap-md px-md py-sm text-on-surface-variant hover:bg-surface-container-high transition-all rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="inventory_2">inventory_2</span>
+<span>Inventory</span>
+</a>
+<a class="bg-secondary-container text-on-secondary-container font-bold rounded-lg flex items-center gap-md px-md py-sm transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="groups">groups</span>
+<span>Staff Attendance</span>
+</a>
+<a class="flex items-center gap-md px-md py-sm text-on-surface-variant hover:bg-surface-container-high transition-all rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="bed">bed</span>
+<span>Bed Management</span>
+</a>
+<a class="flex items-center gap-md px-md py-sm text-on-surface-variant hover:bg-surface-container-high transition-all rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="event_available">event_available</span>
+<span>Patient Flow</span>
+</a>
+<a class="flex items-center gap-md px-md py-sm text-on-surface-variant hover:bg-surface-container-high transition-all rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="analytics">analytics</span>
+<span>Analytics</span>
+</a>
+</nav>
+</div>
+<div class="mt-auto p-lg border-t border-outline-variant">
+<button class="w-full bg-primary text-on-primary py-sm rounded mb-lg font-bold flex items-center justify-center gap-sm">
+<span class="material-symbols-outlined" data-icon="description">description</span>
+                    Generate Report
+                </button>
+<div class="space-y-1">
+<a class="flex items-center gap-md px-md py-sm text-on-surface-variant hover:bg-surface-container-high transition-all rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span>Settings</span>
+</a>
+<a class="flex items-center gap-md px-md py-sm text-on-surface-variant hover:bg-surface-container-high transition-all rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="help">help</span>
+<span>Help</span>
+</a>
+</div>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="flex-1 md:ml-64 p-lg bg-background">
+<!-- Breadcrumbs & Title -->
+<div class="flex flex-col md:flex-row md:items-center justify-between mb-lg gap-md">
+<div>
+<h1 class="font-headline-md text-headline-md text-primary mb-1">Staff Rostering &amp; Attendance</h1>
+<p class="text-on-surface-variant font-body-sm flex items-center gap-xs">
+<span class="material-symbols-outlined text-sm" data-icon="location_on">location_on</span>
+                        South District Medical Center • Today, Oct 24
+                    </p>
+</div>
+<div class="flex gap-md">
+<div class="flex items-center gap-sm bg-surface-container-low px-md py-sm border border-outline-variant rounded-lg">
+<span class="text-xs text-on-surface-variant uppercase font-bold">Status</span>
+<div class="flex items-center gap-xs">
+<span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+<span class="text-body-sm font-bold">System Online</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Bento Grid Section -->
+<div class="grid grid-cols-1 md:grid-cols-12 gap-lg mb-lg">
+<!-- Who's In Real-time Dashboard (6 cols) -->
+<div class="md:col-span-8 bg-surface border border-outline-variant rounded-xl overflow-hidden flex flex-col shadow-sm">
+<div class="p-md border-b border-outline-variant flex items-center justify-between bg-surface-container-low">
+<h3 class="font-headline-sm text-headline-sm flex items-center gap-sm">
+<span class="material-symbols-outlined text-primary" data-icon="pulse">pause</span>
+                            Who's In Now
+                        </h3>
+<div class="flex items-center gap-md">
+<span class="text-mono-data text-xs px-sm py-1 bg-green-100 text-green-800 rounded">84% Present</span>
+<span class="text-mono-data text-xs px-sm py-1 bg-red-100 text-red-800 rounded">4 Late</span>
+</div>
+</div>
+<div class="p-md grid grid-cols-2 md:grid-cols-4 gap-md">
+<!-- Biometric Entry Cards -->
+<div class="p-sm border border-outline-variant rounded-lg bg-surface-container-lowest flex items-center gap-sm">
+<div class="w-10 h-10 rounded-full border-2 border-green-500 p-0.5">
+<img class="w-full h-full rounded-full object-cover" data-alt="Close up face of a male doctor with dark hair and spectacles, wearing blue surgical scrubs. Clinical lighting environment." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBfQVot82eqMJpB_qpoq7fX2nKQD8-rLyC1X0-F_pvaoQXShb-vzvbDb_PfG5-pasMGJNSMvfNyy1p2azBBBlhm_p7cVVRUJJZgAIq6bWGSfklPUdRhZEuhZhSSqpL6Ei0dl-r_XX2DgGF-8SGEXN0PR2ZCnobg6yi1a_1IdT0llVyIHLxWnrjPBQX86gEH-aqUDwWXfT5k-YLVPFRBwkmOZebVLx13CmI-dF5BQIVeUFOGhhJPa5nVYpI93GNF8EZGVeMz4LCqHzc"/>
+</div>
+<div class="overflow-hidden">
+<p class="text-xs font-bold truncate">Dr. A. Rao</p>
+<p class="text-[10px] text-green-600 font-bold">IN • 08:45 AM</p>
+</div>
+</div>
+<div class="p-sm border border-outline-variant rounded-lg bg-surface-container-lowest flex items-center gap-sm">
+<div class="w-10 h-10 rounded-full border-2 border-green-500 p-0.5">
+<img class="w-full h-full rounded-full object-cover" data-alt="A portrait of a young female nurse wearing a light blue medical uniform, smiling warmly in a bright healthcare setting. The lighting is soft and professional." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAmzeWr1ApVIsetNFyK1ri3HVjybDQWIJifVfij_US5-PVmNuKW4_JpnMkubpfDeMrQkZHsWPiFzGoZSbv6Mgrs0dV9GRmEjOu4fhgB4C_dxoUcXpf35FKrdt_XxqV_I9xTlKBZnVWl2iCW0lYjt9vm9YdRxRZCzpvz0wv6jgy1Q1UqCn9CJayqimA1Si1CJBI0_76DhvVfTDqOln4tuSSH5VPEyPF0u2jp9omujYTeepU_CAaE43l_sSKnWkjg2_r04h0KY6fzwmQ"/>
+</div>
+<div class="overflow-hidden">
+<p class="text-xs font-bold truncate">Nurse Meena</p>
+<p class="text-[10px] text-green-600 font-bold">IN • 08:52 AM</p>
+</div>
+</div>
+<div class="p-sm border border-outline-variant rounded-lg bg-surface-container-lowest flex items-center gap-sm">
+<div class="w-10 h-10 rounded-full border-2 border-yellow-500 p-0.5">
+<img class="w-full h-full rounded-full object-cover" data-alt="A mature male lab technician wearing glasses and a white lab coat, standing in a brightly lit diagnostic laboratory. Neutral professional background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCXquvhVY8FwSOB88CtvfNsGMZ0cEgY_xvVgohX38LEZs8CFWCOpvXCfTxWuAQJpi5IWuCJJl07eHAPIKo97EYBQfCuhL30TU2Yo2-mSj9lkpmU1hiDHbOysL4yd5VjfmIykG88066gn0CFLhEbEUf9GmjudzrnVIAOIlU4i_Q6Lk3-3IHc_gFFWiSR34YkJLc94w3GiTFMhkMs8IlyTCU-6TIpsx9g31rTHKx8jg8k5Yrs1XQ77ul92ikLPS14quti_kj_o0IOems"/>
+</div>
+<div class="overflow-hidden">
+<p class="text-xs font-bold truncate">Tech John S.</p>
+<p class="text-[10px] text-yellow-600 font-bold">LATE • 09:15 AM</p>
+</div>
+</div>
+<div class="p-sm border border-outline-variant rounded-lg bg-surface-container-lowest flex items-center gap-sm grayscale opacity-60">
+<div class="w-10 h-10 rounded-full border-2 border-outline p-0.5">
+<img class="w-full h-full rounded-full object-cover" data-alt="Professional portrait of a female physician with long dark hair, wearing a white coat and a stethoscope around her neck. Clean clinical background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDCh_YlFqyM-bKyAFyV06_a7QTeSygE16BOKaEcS8YakX9W5pNQnFBrlxIULJxqm9yEsprrqfs12B0hJERfObzRhVG1saKRdjWEq5IoapNhd3kORfjQdwEZSFus_AIANTmscqcEs0so9yjkPnassU2LsTUfkP3757vc-_a4s36SsyCMuorvsvixsqP5JhGEl03V7xihqVNJZfdtqLWMgq-MaQyciKCYxqIR0sKl4R-EYo0HruR7G2V_Jx-LyuiUD1BJpiwRDa-8I7I"/>
+</div>
+<div class="overflow-hidden">
+<p class="text-xs font-bold truncate">Dr. S. Kapur</p>
+<p class="text-[10px] text-outline font-bold">EXPECTED • 09:30</p>
+</div>
+</div>
+</div>
+<div class="mt-auto px-md py-sm bg-surface-container flex items-center justify-between text-xs font-mono-data">
+<span class="text-on-surface-variant italic">Next Biometric Sync in 45s</span>
+<a class="text-primary font-bold hover:underline" href="#">View All 124 Staff →</a>
+</div>
+</div>
+<!-- Irregularity Alert Card (4 cols) -->
+<div class="md:col-span-4 bg-error-container border-2 border-error p-lg rounded-xl flex flex-col gap-md">
+<div class="flex items-center gap-sm text-on-error-container">
+<span class="material-symbols-outlined" data-icon="report">report</span>
+<h3 class="font-bold text-lg">Attendance Irregularity</h3>
+</div>
+<p class="text-body-sm text-on-error-container font-medium">
+                        PHC South shows <span class="font-bold">40% absenteeism</span> for 3 consecutive days. Flagged for Admin Audit.
+                    </p>
+<div class="mt-auto flex gap-sm">
+<button class="bg-on-error-container text-error-container px-md py-sm rounded font-bold text-xs">Acknowledge</button>
+<button class="bg-white/20 border border-on-error-container text-on-error-container px-md py-sm rounded font-bold text-xs">Request Audit</button>
+</div>
+</div>
+</div>
+<!-- KPI Row -->
+<div class="grid grid-cols-1 md:grid-cols-4 gap-lg mb-lg">
+<div class="bg-surface border border-outline-variant p-md rounded-xl shadow-sm">
+<p class="text-on-surface-variant font-label-bold mb-xs">CONSULTATIONS / HR</p>
+<div class="flex items-end justify-between">
+<span class="text-display-lg font-display-lg text-primary">8.4</span>
+<span class="text-green-600 text-xs font-bold flex items-center">+12% vs LW</span>
+</div>
+<div class="w-full h-1 bg-surface-container-high rounded-full mt-md overflow-hidden">
+<div class="h-full bg-primary" style="width: 70%"></div>
+</div>
+</div>
+<div class="bg-surface border border-outline-variant p-md rounded-xl shadow-sm">
+<p class="text-on-surface-variant font-label-bold mb-xs">SLA COMPLIANCE</p>
+<div class="flex items-end justify-between">
+<span class="text-display-lg font-display-lg text-primary">94%</span>
+<span class="text-green-600 text-xs font-bold flex items-center">Target Met</span>
+</div>
+<div class="w-full h-1 bg-surface-container-high rounded-full mt-md overflow-hidden">
+<div class="h-full bg-primary" style="width: 94%"></div>
+</div>
+</div>
+<div class="bg-surface border border-outline-variant p-md rounded-xl shadow-sm">
+<p class="text-on-surface-variant font-label-bold mb-xs">STAFF TURNOVER</p>
+<div class="flex items-end justify-between">
+<span class="text-display-lg font-display-lg text-primary">1.2%</span>
+<span class="text-on-surface-variant text-xs font-bold">Monthly</span>
+</div>
+<div class="w-full h-1 bg-surface-container-high rounded-full mt-md overflow-hidden">
+<div class="h-full bg-primary" style="width: 15%"></div>
+</div>
+</div>
+<div class="bg-surface border border-outline-variant p-md rounded-xl shadow-sm">
+<p class="text-on-surface-variant font-label-bold mb-xs">POOL SUBSTITUTIONS</p>
+<div class="flex items-end justify-between">
+<span class="text-display-lg font-display-lg text-secondary">04</span>
+<span class="text-on-surface-variant text-xs font-bold">Active Today</span>
+</div>
+<div class="w-full h-1 bg-surface-container-high rounded-full mt-md overflow-hidden">
+<div class="h-full bg-secondary" style="width: 30%"></div>
+</div>
+</div>
+</div>
+<!-- Main Workspace: Substitution Workflow & Roster -->
+<div class="grid grid-cols-1 md:grid-cols-12 gap-lg">
+<!-- Absence & Substitution workflow (4 cols) -->
+<div class="md:col-span-4 space-y-lg">
+<div class="bg-surface border border-outline-variant rounded-xl p-lg shadow-sm">
+<h3 class="font-headline-sm text-headline-sm mb-lg flex items-center gap-sm">
+<span class="material-symbols-outlined text-secondary" data-icon="person_substitute">person_outline</span>
+                            Substitutions
+                        </h3>
+<div class="bg-secondary-container/30 border border-secondary-container rounded-lg p-md mb-md">
+<div class="flex justify-between items-start mb-sm">
+<span class="bg-error text-on-error text-[10px] font-bold px-2 py-0.5 rounded uppercase">On Leave</span>
+<span class="text-xs font-mono-data">Today</span>
+</div>
+<p class="font-bold text-body-md">Dr. Sharma</p>
+<p class="text-xs text-on-surface-variant mb-md italic">Family Emergency - Medical Leave</p>
+<div class="pt-md border-t border-secondary-container">
+<div class="flex items-center gap-sm mb-sm">
+<div class="w-2 h-2 rounded-full bg-primary animate-ping"></div>
+<span class="text-xs font-bold text-primary">District Pool Allocation</span>
+</div>
+<div class="flex items-center gap-md">
+<img class="w-10 h-10 rounded-lg object-cover" data-alt="A portrait of a male doctor in his 40s, with greyish hair, wearing a white clinical coat and professional glasses. Sharp, high-contrast office lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBAeyxgkKQyDQ4I55F_Tl0Hhyu0ewh_XI9NI8uXfJmq0XaN1-aZsCswlxvSMOBmNE4URd_4Xy7v1uBAJ4-ItDu9jV3Os3q5AhBV_WRCkor1ZvsRiCtFCC4_8DgVy66nXzouO3DlMe2FFqRT4p4BjcFyRzUSx7egJNfWNgnsPHvpj9lQ3eGBksPuk7zGZgRe2Y6hp5CGjPfJafM12wtaAR-Q0xKl4rQWxinBcA8Ags5Ow3GZDnIf8qzYh3vrtD-bQPdGngDWr5hfSqg"/>
+<div>
+<p class="font-bold text-body-sm">Dr. Verma</p>
+<p class="text-[10px] text-on-surface-variant">Arrival in 15m</p>
+</div>
+</div>
+</div>
+</div>
+<button class="w-full border-2 border-dashed border-outline-variant py-md rounded-lg text-on-surface-variant text-sm font-bold hover:bg-surface-container-low transition-colors">
+                            + Request New Substitution
+                        </button>
+</div>
+<div class="bg-surface border border-outline-variant rounded-xl p-lg shadow-sm">
+<h3 class="font-headline-sm text-headline-sm mb-md">Quick Tasks</h3>
+<div class="space-y-sm">
+<div class="flex items-center gap-md p-sm hover:bg-surface-container-low rounded cursor-pointer transition-colors">
+<div class="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center">
+<span class="material-symbols-outlined text-sm" data-icon="assignment_turned_in">assignment_turned_in</span>
+</div>
+<span class="text-body-sm font-medium">Verify Overtime (12 staff)</span>
+</div>
+<div class="flex items-center gap-md p-sm hover:bg-surface-container-low rounded cursor-pointer transition-colors">
+<div class="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center">
+<span class="material-symbols-outlined text-sm" data-icon="edit_calendar">edit_calendar</span>
+</div>
+<span class="text-body-sm font-medium">Finalize Nov Roster</span>
+</div>
+<div class="flex items-center gap-md p-sm hover:bg-surface-container-low rounded cursor-pointer transition-colors">
+<div class="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center">
+<span class="material-symbols-outlined text-sm" data-icon="forward_to_inbox">forward_to_inbox</span>
+</div>
+<span class="text-body-sm font-medium">Bulk Notify Night Shift</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Weekly Shift Roster (8 cols) -->
+<div class="md:col-span-8 bg-surface border border-outline-variant rounded-xl shadow-sm overflow-hidden flex flex-col">
+<div class="p-md border-b border-outline-variant flex items-center justify-between">
+<div class="flex items-center gap-lg">
+<h3 class="font-headline-sm text-headline-sm">Weekly Roster</h3>
+<div class="flex items-center bg-surface-container-high rounded-full p-1">
+<button class="px-md py-1 bg-white shadow rounded-full text-xs font-bold">Oct 21 - Oct 27</button>
+<button class="px-md py-1 text-xs font-bold text-on-surface-variant">Oct 28 - Nov 03</button>
+</div>
+</div>
+<div class="flex gap-sm">
+<button class="p-1.5 border border-outline-variant rounded hover:bg-surface-container"><span class="material-symbols-outlined" data-icon="chevron_left">chevron_left</span></button>
+<button class="p-1.5 border border-outline-variant rounded hover:bg-surface-container"><span class="material-symbols-outlined" data-icon="chevron_right">chevron_right</span></button>
+</div>
+</div>
+<div class="overflow-x-auto custom-scrollbar">
+<table class="w-full text-left border-collapse min-w-[800px]">
+<thead>
+<tr class="bg-surface-container-lowest border-b border-outline-variant">
+<th class="p-md font-label-bold text-on-surface-variant w-48">Staff Member</th>
+<th class="p-md font-label-bold text-on-surface-variant">Role</th>
+<th class="p-md font-label-bold text-on-surface-variant text-center bg-primary/5">Mon (21)</th>
+<th class="p-md font-label-bold text-on-surface-variant text-center">Tue (22)</th>
+<th class="p-md font-label-bold text-on-surface-variant text-center">Wed (23)</th>
+<th class="p-md font-label-bold text-on-surface-variant text-center bg-secondary/5 font-bold">Today (24)</th>
+<th class="p-md font-label-bold text-on-surface-variant text-center">Fri (25)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="border-b border-outline-variant hover:bg-slate-50 transition-colors">
+<td class="p-md">
+<div class="flex items-center gap-sm">
+<div class="w-8 h-8 rounded bg-primary-container text-on-primary-container flex items-center justify-center text-[10px] font-bold">AR</div>
+<div>
+<p class="text-body-sm font-bold">Dr. A. Rao</p>
+<p class="text-[10px] text-on-surface-variant">ID: #D-241</p>
+</div>
+</div>
+</td>
+<td class="p-md">
+<span class="text-xs font-bold text-primary px-sm py-0.5 bg-primary-fixed rounded">Doctor</span>
+</td>
+<td class="p-sm text-center"><span class="bg-surface-container-high px-3 py-1 rounded text-[10px] font-bold">MORN</span></td>
+<td class="p-sm text-center"><span class="bg-surface-container-high px-3 py-1 rounded text-[10px] font-bold">MORN</span></td>
+<td class="p-sm text-center"><span class="bg-outline-variant text-white px-3 py-1 rounded text-[10px] font-bold">OFF</span></td>
+<td class="p-sm text-center bg-secondary/5"><span class="bg-primary text-white px-3 py-1 rounded text-[10px] font-bold shadow-sm">MORN</span></td>
+<td class="p-sm text-center"><span class="bg-surface-container-high px-3 py-1 rounded text-[10px] font-bold">MORN</span></td>
+</tr>
+<tr class="border-b border-outline-variant hover:bg-slate-50 transition-colors">
+<td class="p-md">
+<div class="flex items-center gap-sm">
+<div class="w-8 h-8 rounded bg-secondary-container text-on-secondary-container flex items-center justify-center text-[10px] font-bold">MK</div>
+<div>
+<p class="text-body-sm font-bold">Nurse Meena</p>
+<p class="text-[10px] text-on-surface-variant">ID: #N-102</p>
+</div>
+</div>
+</td>
+<td class="p-md">
+<span class="text-xs font-bold text-secondary px-sm py-0.5 bg-secondary-fixed rounded">Nurse</span>
+</td>
+<td class="p-sm text-center"><span class="bg-surface-container-high px-3 py-1 rounded text-[10px] font-bold">EVE</span></td>
+<td class="p-sm text-center"><span class="bg-surface-container-high px-3 py-1 rounded text-[10px] font-bold">EVE</span></td>
+<td class="p-sm text-center"><span class="bg-surface-container-high px-3 py-1 rounded text-[10px] font-bold">EVE</span></td>
+<td class="p-sm text-center bg-secondary/5"><span class="bg-primary text-white px-3 py-1 rounded text-[10px] font-bold shadow-sm">EVE</span></td>
+<td class="p-sm text-center"><span class="bg-surface-container-high px-3 py-1 rounded text-[10px] font-bold">EVE</span></td>
+</tr>
+<tr class="border-b border-outline-variant hover:bg-slate-50 transition-colors">
+<td class="p-md">
+<div class="flex items-center gap-sm">
+<div class="w-8 h-8 rounded bg-tertiary-container text-on-tertiary-container flex items-center justify-center text-[10px] font-bold">JS</div>
+<div>
+<p class="text-body-sm font-bold">Tech John S.</p>
+<p class="text-[10px] text-on-surface-variant">ID: #L-099</p>
+</div>
+</div>
+</td>
+<td class="p-md">
+<span class="text-xs font-bold text-tertiary px-sm py-0.5 bg-tertiary-fixed rounded">Lab Tech</span>
+</td>
+<td class="p-sm text-center"><span class="bg-surface-container-high px-3 py-1 rounded text-[10px] font-bold">NIGHT</span></td>
+<td class="p-sm text-center"><span class="bg-outline-variant text-white px-3 py-1 rounded text-[10px] font-bold">OFF</span></td>
+<td class="p-sm text-center"><span class="bg-surface-container-high px-3 py-1 rounded text-[10px] font-bold">NIGHT</span></td>
+<td class="p-sm text-center bg-secondary/5"><span class="bg-primary text-white px-3 py-1 rounded text-[10px] font-bold shadow-sm">NIGHT</span></td>
+<td class="p-sm text-center"><span class="bg-surface-container-high px-3 py-1 rounded text-[10px] font-bold">NIGHT</span></td>
+</tr>
+<tr class="border-b border-outline-variant hover:bg-slate-50 transition-colors">
+<td class="p-md">
+<div class="flex items-center gap-sm opacity-50">
+<div class="w-8 h-8 rounded bg-error-container text-error flex items-center justify-center text-[10px] font-bold">PS</div>
+<div>
+<p class="text-body-sm font-bold">Dr. Sharma</p>
+<p class="text-[10px] text-on-surface-variant">ID: #D-005</p>
+</div>
+</div>
+</td>
+<td class="p-md">
+<span class="text-xs font-bold text-primary px-sm py-0.5 bg-primary-fixed rounded opacity-50">Doctor</span>
+</td>
+<td class="p-sm text-center"><span class="bg-surface-container-high px-3 py-1 rounded text-[10px] font-bold">MORN</span></td>
+<td class="p-sm text-center"><span class="bg-surface-container-high px-3 py-1 rounded text-[10px] font-bold">MORN</span></td>
+<td class="p-sm text-center"><span class="bg-error text-white px-3 py-1 rounded text-[10px] font-bold">LEAVE</span></td>
+<td class="p-sm text-center bg-secondary/5"><span class="bg-error text-white px-3 py-1 rounded text-[10px] font-bold">LEAVE</span></td>
+<td class="p-sm text-center"><span class="bg-error text-white px-3 py-1 rounded text-[10px] font-bold">LEAVE</span></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="p-md bg-surface-container-low flex justify-between items-center text-xs text-on-surface-variant font-medium">
+<div class="flex gap-md">
+<span class="flex items-center gap-xs"><span class="w-2 h-2 rounded-full bg-primary"></span> Assigned</span>
+<span class="flex items-center gap-xs"><span class="w-2 h-2 rounded-full bg-error"></span> Leave</span>
+<span class="flex items-center gap-xs"><span class="w-2 h-2 rounded-full bg-outline-variant"></span> Day Off</span>
+</div>
+<button class="text-primary font-bold hover:underline">View Full Month →</button>
+</div>
+</div>
+</div>
+<!-- Footer Spacing -->
+<div class="h-12"></div>
+</main>
+</div>
+<!-- Floating Action Button (Supressed on details/transactional, but useful for dashboard) -->
+<button class="fixed bottom-lg right-lg bg-primary text-on-primary w-14 h-14 rounded-full shadow-lg flex items-center justify-center hover:scale-105 transition-transform z-40">
+<span class="material-symbols-outlined text-2xl" data-icon="add">add</span>
+</button>
+<script>
+        // Micro-interaction for table rows
+        document.querySelectorAll('tbody tr').forEach(row => {
+            row.addEventListener('mouseenter', () => {
+                row.classList.add('glow-active');
+            });
+            row.addEventListener('mouseleave', () => {
+                row.classList.remove('glow-active');
+            });
+        });
+
+        // Simulating biometric sync
+        setInterval(() => {
+            const syncText = document.querySelector('.italic');
+            if (syncText) {
+                let timeLeft = parseInt(syncText.textContent.match(/\d+/)[0]);
+                timeLeft = timeLeft <= 1 ? 60 : timeLeft - 1;
+                syncText.textContent = `Next Biometric Sync in ${timeLeft}s`;
+            }
+        }, 1000);
+    </script>
+</body></html>
