@@ -1,6 +1,6 @@
 # HealthNexus AI: Multilingual Real-Time Health Centre Management & AI Orchestrator
 
-![HealthNexus AI Banner](https://images.unsplash.com/photo-1519494026892-80bbd2d6fe0d?q=80&w=1200&auto=format&fit=crop)
+![HealthNexus AI Banner](src/assets/banner.png)
 
 **HealthNexus AI** is a state-of-the-art multilingual artificial intelligence platform built for the **Google GDG Hackathon**. It provides complete, real-time operational visibility and automated resource management across a district's Primary Health Centres (PHCs) and Community Health Centres (CHCs).
 
