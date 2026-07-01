@@ -13,6 +13,7 @@ import ResourceSimulator from './modules/simulation/ResourceSimulator';
 import StockScanner from './modules/inventory/StockScanner';
 import AIExplainability from './modules/dashboard/AIExplainability';
 import DemoStoryMode from './modules/dashboard/DemoStoryMode';
+import AICopilot from './modules/dashboard/AICopilot';
 
 const renderMarkdownLine = (line: string) => {
   let displayLine = line;
@@ -639,128 +640,13 @@ export default function App() {
               )}
 
               {/* Bento Grid matching Stitch format */}
-              <div className="bento-grid">
+              <div className="flex flex-col gap-6">
                 
-                {/* AI Insights & Alerts Panel */}
-                <div className="col-span-12 lg:col-span-5 bg-primary-container text-on-primary-container p-lg rounded-xl flex flex-col gap-md relative overflow-hidden shadow-sm h-[680px]">
-                  <div className="flex items-center gap-sm z-10">
-                    <span className="material-symbols-outlined text-2xl" style={{ fontVariationSettings: "'FILL' 1" }}>psychology</span>
-                    <h3 className="font-headline-sm text-headline-sm text-white">AI Insights & Alerts</h3>
-                  </div>
-
-                  {/* Top Static Insights matching code.html */}
-                  <div className="space-y-2 z-10">
-                    <div className="bg-white/10 p-3 rounded-lg border border-white/20 text-xs">
-                      <div className="font-label-bold flex items-center gap-sm text-white mb-xs">
-                        <span className="material-symbols-outlined text-sm">inventory</span> INVENTORY PREDICTION
-                      </div>
-                      <p className="font-body-md text-slate-200">Low amoxicillin stock predicted in <strong>4 PHCs</strong> within 5 days.</p>
-                    </div>
-                    <div className="bg-white/10 p-3 rounded-lg border border-white/20 text-xs">
-                      <div className="font-label-bold flex items-center gap-sm text-white mb-xs">
-                        <span className="material-symbols-outlined text-sm">local_shipping</span> REDISTRIBUTION OPTION
-                      </div>
-                      <p className="font-body-md text-slate-200"><strong>1200 units</strong> available at <strong>CHC West</strong> for immediate redistribution to flagged centers.</p>
-                    </div>
-                  </div>
-
-                  {/* Interactive AI Chat Console */}
-                  <div className="flex-1 bg-white/5 border border-white/10 rounded-xl p-4 overflow-y-auto font-sans space-y-4 text-xs leading-relaxed shadow-inner z-10">
-                    {aiLoading ? (
-                      <div className="flex flex-col items-center justify-center h-full space-y-3">
-                        <span className="material-symbols-outlined text-3xl text-white animate-spin">refresh</span>
-                        <span className="text-slate-200 font-medium">
-                          {isHi ? 'जेमिनी एआई टेलीमेट्री डेटा का विश्लेषण कर रहा है...' : 'Gemini AI is analyzing real-time telemetry...'}
-                        </span>
-                      </div>
-                    ) : (
-                      <div className="text-white space-y-3">
-                        {aiResponse.split('\n\n').map((paragraph, i) => {
-                          if (paragraph.startsWith('###')) {
-                            return (
-                              <h3 key={i} className="text-sm font-bold text-white pb-1 border-b border-white/10 mb-2">
-                                {paragraph.replace('###', '').trim()}
-                              </h3>
-                            );
-                          }
-                          
-                          const lines = paragraph.split('\n');
-                          const hasList = lines.some(l => l.trim().startsWith('*') || l.trim().startsWith('-') || /^\d+\./.test(l.trim()));
-                          
-                          if (hasList) {
-                            return (
-                              <div key={i} className="space-y-1 pl-2 border-l border-white/20">
-                                {lines.map((line, j) => (
-                                  <p key={j} className="text-xs text-slate-200">
-                                    {renderMarkdownLine(line)}
-                                  </p>
-                                ))}
-                              </div>
-                            );
-                          }
-                          
-                          return (
-                            <p key={i} className="text-xs text-slate-200">
-                              {lines.map((line, j) => (
-                                <span key={j} className="block">
-                                  {renderMarkdownLine(line)}
-                                </span>
-                              ))}
-                            </p>
-                          );
-                        })}
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Pre-set Quick Query Chips */}
-                  <div className="z-10 py-1">
-                    <span className="text-[11px] font-bold text-slate-300 block mb-1.5 uppercase tracking-wider">
-                      {isHi ? 'त्वरित प्रशासनिक प्रश्न:' : 'Quick Administrative Prompts:'}
-                    </span>
-                    <div className="flex flex-wrap gap-1.5">
-                      <button
-                        onClick={() => handleAskAI(isHi ? 'जिले में डॉक्टर और स्टाफ की उपस्थिति रिपोर्ट दिखाएं' : 'Show district staff attendance report')}
-                        className="px-2.5 py-1 bg-white/20 hover:bg-white/30 border border-white/20 rounded-lg text-[11px] font-medium text-white transition"
-                      >
-                        👥 Staff Attendance
-                      </button>
-                      <button
-                        onClick={() => handleAskAI(isHi ? 'बिस्तर अधिभोग और ICU बेड स्थिति का विश्लेषण करें' : 'Show district bed occupancy analysis')}
-                        className="px-2.5 py-1 bg-white/20 hover:bg-white/30 border border-white/20 rounded-lg text-[11px] font-medium text-white transition"
-                      >
-                        🛏️ Bed Occupancy
-                      </button>
-                      <button
-                        onClick={() => handleAskAI(isHi ? 'दवा इन्वेंटरी और एमोक्सिसिलिन स्टॉक-आउट पूर्वानुमान बताएं' : 'Show drug inventory and amoxicillin stockout forecast')}
-                        className="px-2.5 py-1 bg-white/20 hover:bg-white/30 border border-white/20 rounded-lg text-[11px] font-medium text-white transition"
-                      >
-                        📦 Drug Stock Status
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Input Chat Bar */}
-                  <div className="flex items-center space-x-2 border-t border-white/20 pt-3 z-10">
-                    <input
-                      type="text"
-                      value={aiQuery}
-                      onChange={(e) => setAiQuery(e.target.value)}
-                      onKeyDown={(e) => e.key === 'Enter' && handleAskAI(aiQuery)}
-                      placeholder={isHi ? 'स्वास्थ्य केंद्र डेटा के बारे में कुछ भी पूछें...' : 'Ask Gemini anything about health centre telemetry...'}
-                      className="flex-1 bg-white/10 border border-white/20 rounded-xl px-4 py-2 text-xs text-white placeholder-slate-300 focus:outline-none focus:border-white transition"
-                    />
-                    <button
-                      onClick={() => handleAskAI(aiQuery)}
-                      className="bg-white text-primary font-label-bold p-2.5 rounded-xl shadow hover:bg-primary-fixed transition-colors active:scale-95"
-                    >
-                      <span className="material-symbols-outlined text-base">send</span>
-                    </button>
-                  </div>
-                </div>
+                {/* AI Copilot Panel */}
+                <AICopilot language={language} />
 
                 {/* Facility Performance List matching code.html */}
-                <div className="col-span-12 lg:col-span-7 bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden shadow-sm flex flex-col h-[680px]">
+                <div className="w-full bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden shadow-sm flex flex-col h-[680px]">
                   <div className="px-lg py-md border-b border-outline-variant flex justify-between items-center bg-surface-container-low">
                     <h3 className="font-headline-sm text-headline-sm text-primary">Intervention Flags & Facility Telemetry</h3>
                     <span className="text-label-bold text-on-surface-variant">{facilities.length + 4} Centers Monitored</span>

@@ -1,5 +1,3 @@
-
-
 interface Props {
   language: string;
 }
@@ -8,49 +6,166 @@ export default function DiseaseIntelligence({ language }: Props) {
   const isHi = language === 'hi';
 
   const hotspots = [
-    { zone: 'Mundawar (North Alwar)', disease: 'Dengue Surge', cases: 38, risk: 'HIGH', trend: '↑ 12%' },
-    { zone: 'Tijara (East Alwar)', disease: 'Malaria Spikes', cases: 14, risk: 'MODERATE', trend: '↓ 3%' },
-    { zone: 'Behror (West Alwar)', disease: 'Acute Respiratory Inf.', cases: 92, risk: 'CRITICAL', trend: '↑ 28%' }
+    { 
+      zone: isHi ? 'थानागाज़ी ब्लॉक' : 'Thanagazi Block', 
+      disease: isHi ? 'डेंगू रक्तस्रावी' : 'Dengue Hemorrhagic', 
+      cases: 24, 
+      phcs: 6,
+      daysActive: 4,
+      risk: 'Critical', 
+      prob: 73,
+      riskColor: 'error',
+      bgRisk: 'bg-error',
+      textRisk: 'text-error',
+      bgRiskTag: 'bg-error text-white'
+    },
+    { 
+      zone: isHi ? 'बानसूर ब्लॉक' : 'Bansur Block', 
+      disease: isHi ? 'मलेरिया (पी. फाल्सीपेरम)' : 'Malaria (P. falciparum)', 
+      cases: 12, 
+      phcs: 3,
+      daysActive: 2,
+      risk: 'Warning', 
+      prob: 58,
+      riskColor: 'amber-600',
+      bgRisk: 'bg-amber-500',
+      textRisk: 'text-amber-600',
+      bgRiskTag: 'bg-amber-100 text-amber-800'
+    },
+    { 
+      zone: isHi ? 'रामगढ़ ब्लॉक' : 'Ramgarh Block', 
+      disease: isHi ? 'श्वसन संक्रमण' : 'Respiratory Infection', 
+      cases: 8, 
+      phcs: 2,
+      daysActive: 7,
+      risk: 'Monitoring', 
+      prob: 32,
+      riskColor: 'secondary',
+      bgRisk: 'bg-secondary',
+      textRisk: 'text-secondary',
+      bgRiskTag: 'bg-surface-variant text-on-surface-variant'
+    }
   ];
 
   return (
-    <div className="bg-surface-container-lowest border border-outline-variant rounded-2xl p-6 shadow-sm space-y-4">
-      <div className="flex items-center justify-between border-b border-outline-variant pb-3">
-        <div className="flex items-center space-x-2 text-primary font-headline-sm text-base">
-          <span className="material-symbols-outlined text-xl text-error">coronavirus</span>
-          <h3>{isHi ? 'रोग खुफिया एवं हॉटस्पॉट विश्लेषण' : 'Disease Intelligence & Hotspots'}</h3>
+    <section className="space-y-6">
+      {/* Dashboard Header */}
+      <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-outline-variant pb-6">
+        <div className="flex items-center gap-4">
+          <div className="w-14 h-14 bg-primary-container/10 rounded-full flex items-center justify-center">
+            <span className="material-symbols-outlined text-primary text-[32px]">psychology</span>
+          </div>
+          <div>
+            <h1 className="text-[24px] leading-[32px] tracking-[-0.01em] font-semibold text-primary">
+              {isHi ? 'रोग खुफिया — अलवर जिला' : 'Disease Intelligence — Alwar District'}
+            </h1>
+            <p className="text-[16px] leading-[24px] text-on-surface-variant">
+              {isHi ? 'एआई-संचालित प्रकोप का पता लगाना' : 'AI-driven outbreak detection & early warning system'}
+            </p>
+          </div>
         </div>
-        <span className="px-2.5 py-0.5 bg-error-container text-on-error-container text-[10px] font-bold rounded-full">
-          {isHi ? '3 सक्रिय अलर्ट' : '3 Active Alerts'}
-        </span>
-      </div>
+        <div className="flex gap-2">
+          <div className="px-4 py-2 bg-error-container text-on-error-container text-[12px] leading-[16px] tracking-[0.05em] font-semibold rounded-full flex items-center gap-2 border border-error/20">
+            <span className="w-2 h-2 bg-error rounded-full animate-pulse"></span>
+            {isHi ? '3 सक्रिय क्लस्टर' : '3 Active Clusters'}
+          </div>
+          <div className="px-4 py-2 bg-secondary-container text-on-secondary-container text-[12px] leading-[16px] tracking-[0.05em] font-semibold rounded-full flex items-center gap-2 border border-primary/20">
+            <span className="material-symbols-outlined text-[16px]">auto_awesome</span>
+            {isHi ? 'एआई विश्वास: 87%' : 'AI Confidence: 87%'}
+          </div>
+        </div>
+      </header>
 
-      <div className="space-y-3">
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          {hotspots.map((item, idx) => (
-            <div key={idx} className="p-3 bg-surface-container-low rounded-xl border border-outline-variant space-y-2 relative overflow-hidden">
-              <div className="absolute top-0 right-0 h-1 w-12 bg-error" />
-              <div className="flex justify-between items-center text-[10px] font-bold text-secondary uppercase">
-                <span>{item.zone}</span>
-                <span className={item.risk === 'CRITICAL' ? 'text-error' : 'text-amber-600'}>{item.risk}</span>
+      {/* Hotspot Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {hotspots.map((item, idx) => (
+          <div key={idx} className="bg-white border border-outline-variant p-4 rounded-xl flex flex-col shadow-sm">
+            <div className="flex justify-between items-start mb-4">
+              <div className="flex items-center gap-2">
+                <span className="material-symbols-outlined text-primary">location_on</span>
+                <span className="text-[12px] leading-[16px] tracking-[0.05em] font-semibold text-on-surface uppercase">{item.zone}</span>
               </div>
-              <h4 className="font-bold text-sm text-primary">{item.disease}</h4>
-              <div className="flex justify-between items-baseline text-xs">
-                <span className="text-on-surface-variant">Active Cases: <strong className="text-primary">{item.cases}</strong></span>
-                <span className="font-bold text-green-600">{item.trend}</span>
+              <span className={`px-2 py-1 text-[10px] font-bold rounded uppercase ${item.bgRiskTag}`}>{isHi ? item.risk : item.risk}</span>
+            </div>
+            
+            <div className="mb-6">
+              <h3 className="text-[20px] leading-[28px] font-semibold text-on-surface mb-2">{item.disease}</h3>
+              <div className="flex justify-between border-y border-outline-variant/30 py-2">
+                <div className="text-center">
+                  <div className={`font-mono ${item.textRisk} flex items-center justify-center font-medium`}>
+                    {item.cases} <span className="material-symbols-outlined text-[12px]">arrow_upward</span>
+                  </div>
+                  <div className="text-[10px] leading-[16px] tracking-[0.05em] font-semibold text-on-surface-variant uppercase">{isHi ? 'मामले' : 'Cases'}</div>
+                </div>
+                <div className="text-center">
+                  <div className="font-mono text-on-surface font-medium">{item.phcs < 10 ? `0${item.phcs}` : item.phcs}</div>
+                  <div className="text-[10px] leading-[16px] tracking-[0.05em] font-semibold text-on-surface-variant uppercase">{isHi ? 'प्रभावित PHC' : 'PHCs Affected'}</div>
+                </div>
+                <div className="text-center">
+                  <div className="font-mono text-on-surface font-medium">{item.daysActive < 10 ? `0${item.daysActive}` : item.daysActive}</div>
+                  <div className="text-[10px] leading-[16px] tracking-[0.05em] font-semibold text-on-surface-variant uppercase">{isHi ? 'सक्रिय दिन' : 'Days Active'}</div>
+                </div>
               </div>
             </div>
-          ))}
-        </div>
 
-        {/* Explainability Block */}
-        <div className="p-3.5 bg-primary-container/20 border border-primary-container/40 rounded-xl text-xs space-y-1">
-          <span className="font-extrabold text-primary block">AI Outbreak Explanation</span>
-          <p className="text-on-surface-variant leading-relaxed font-medium">
-            Environmental factors (sudden monsoon precipitation spike) combined with high local population density in Mundawar correlate directly with a <strong>32% rise in vector breeding vectors</strong>. Early stock redistribution prevents local health collapse.
+            <div className="bg-surface-container-low p-2 rounded-lg mb-4">
+              <div className="flex justify-between items-center mb-1">
+                <span className="text-[11px] leading-[16px] tracking-[0.05em] font-semibold text-primary">{isHi ? 'एआई विश्लेषण' : 'AI Analysis'}</span>
+                <span className="font-mono text-[11px] text-on-surface-variant">{item.prob}% {isHi ? 'संभावना' : 'Prob.'}</span>
+              </div>
+              <div className="w-full bg-outline-variant h-1.5 rounded-full overflow-hidden">
+                <div className={`${item.bgRisk} h-full`} style={{ width: `${item.prob}%` }}></div>
+              </div>
+            </div>
+
+            <button className="mt-auto w-full py-2 bg-primary text-white rounded text-[12px] leading-[16px] tracking-[0.05em] font-semibold hover:opacity-90 transition-all">
+              {isHi ? 'प्रतिक्रिया दल तैनात करें' : 'Deploy Response Team'}
+            </button>
+          </div>
+        ))}
+      </div>
+
+      {/* Recommended Actions Banner */}
+      <div className="bg-primary-container text-on-primary-container p-6 rounded-xl flex flex-col md:flex-row gap-6 items-center relative overflow-hidden mt-6 shadow-sm">
+        <div className="absolute right-0 top-0 opacity-10 scale-150 rotate-12 pointer-events-none">
+          <span className="material-symbols-outlined text-[200px]">health_and_safety</span>
+        </div>
+        
+        <div className="shrink-0 z-10">
+          <div className="flex items-center gap-2 mb-2">
+            <span className="material-symbols-outlined text-primary">lightbulb</span>
+            <h2 className="text-[20px] leading-[28px] font-semibold text-primary">
+              {isHi ? 'अनुशंसित निवारक कार्रवाई' : 'Recommended Preventive Actions'}
+            </h2>
+          </div>
+          <p className="text-[14px] leading-[20px] opacity-90 max-w-sm text-on-surface">
+            {isHi ? 'प्राथमिकता वाले हस्तक्षेप' : 'Strategic interventions prioritized based on multi-factor outbreak modeling and regional supply capacity.'}
           </p>
         </div>
+        
+        <div className="flex-1 w-full z-10">
+          <ul className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <li className="flex items-center gap-4 bg-white/50 p-4 rounded-lg border border-white/60 shadow-sm">
+              <span className="w-8 h-8 rounded-full bg-primary/20 text-primary flex items-center justify-center shrink-0 font-bold">1</span>
+              <span className="text-[14px] leading-[20px] font-medium text-on-surface">
+                {isHi ? 'थानागाज़ी ब्लॉक में वेक्टर नियंत्रण' : 'Deploy vector control in Thanagazi Block'}
+              </span>
+            </li>
+            <li className="flex items-center gap-4 bg-white/50 p-4 rounded-lg border border-white/60 shadow-sm">
+              <span className="w-8 h-8 rounded-full bg-primary/20 text-primary flex items-center justify-center shrink-0 font-bold">2</span>
+              <span className="text-[14px] leading-[20px] font-medium text-on-surface">
+                {isHi ? 'PHC स्तर पर ORS स्टॉक बढ़ाएं' : 'Increase ORS stock at PHC level'}
+              </span>
+            </li>
+            <li className="flex items-center gap-4 bg-white/50 p-4 rounded-lg border border-white/60 shadow-sm">
+              <span className="w-8 h-8 rounded-full bg-primary/20 text-primary flex items-center justify-center shrink-0 font-bold">3</span>
+              <span className="text-[14px] leading-[20px] font-medium text-on-surface">
+                {isHi ? 'उच्च जोखिम वाले क्षेत्रों में अलर्ट' : 'Alert nursing staff in high-risk zones'}
+              </span>
+            </li>
+          </ul>
+        </div>
       </div>
-    </div>
+    </section>
   );
 }

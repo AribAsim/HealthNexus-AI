@@ -134,6 +134,7 @@ src/
     │   ├── PerformanceAnalytics.tsx    ← Facility leaderboard
     │   ├── NightlyWorkflow.tsx         ← Autonomous AI timeline
     │   ├── AIExplainability.tsx        ← "Why this?" evidence panel
+    │   ├── AICopilot.tsx               ← AI Copilot Assistant Panel
     │   └── DemoStoryMode.tsx           ← Guided judge walkthrough bar
     ├── inventory/
     │   └── StockScanner.tsx        ← Computer vision shelf scan
