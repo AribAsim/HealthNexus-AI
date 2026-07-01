@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { alwarFacilities } from './data/alwarFacilities';
 
 export interface InventoryItem {
   id: string;
@@ -117,93 +118,6 @@ interface HealthStore {
   addLog: (type: 'INFO' | 'ALERT' | 'TRANSFER' | 'SYNC' | 'MAINTENANCE' | 'STAFF', message: string, messageHi: string, facility: string) => void;
 }
 
-const INITIAL_FACILITIES: Facility[] = [
-  {
-    id: 'phc-alpha',
-    name: 'PHC Alpha (Mundawar)',
-    nameHi: 'प्राथमिक स्वास्थ्य केंद्र अल्फा (मुंडावर)',
-    type: 'PHC',
-    location: 'North District Zone',
-    status: 'OPTIMAL',
-    inventory: [
-      { id: 'amox', name: 'Amoxicillin 500mg', nameHi: 'एमोक्सिसिलिन 500mg', category: 'Antibiotics', stock: 65, minThreshold: 50, unit: 'Boxes', expiryDate: '2027-08', status: 'OPTIMAL' },
-      { id: 'para', name: 'Paracetamol 650mg', nameHi: 'पैरासिटामोल 650mg', category: 'Antipyretics', stock: 120, minThreshold: 40, unit: 'Boxes', expiryDate: '2028-01', status: 'OPTIMAL' },
-      { id: 'ors', name: 'ORS Packets', nameHi: 'ओआरएस पैकेट्स', category: 'Electrolytes', stock: 250, minThreshold: 100, unit: 'Packs', expiryDate: '2027-12', status: 'OPTIMAL' },
-      { id: 'iv', name: 'IV Fluids (RL)', nameHi: 'आईवी फ्लुइड्स', category: 'Fluids', stock: 45, minThreshold: 30, unit: 'Bottles', expiryDate: '2026-11', status: 'OPTIMAL' }
-    ],
-    beds: { total: 10, occupied: 7, available: 3, icuTotal: 0, icuOccupied: 0 },
-    staff: { doctorsExpected: 3, doctorsPresent: 3, nursesExpected: 5, nursesPresent: 5, attendanceRate: 100 },
-    footfall: { currentQueue: 14, dailyTotal: 86, estimatedWaitMinutes: 22, triageUrgent: 2 }
-  },
-  {
-    id: 'chc-beta',
-    name: 'CHC Beta (Tijara)',
-    nameHi: 'सामुदायिक स्वास्थ्य केंद्र बीटा (तिजारा)',
-    type: 'CHC',
-    location: 'Central District Zone',
-    status: 'OPTIMAL',
-    inventory: [
-      { id: 'amox', name: 'Amoxicillin 500mg', nameHi: 'एमोक्सिसिलिन 500mg', category: 'Antibiotics', stock: 220, minThreshold: 80, unit: 'Boxes', expiryDate: '2027-10', status: 'OPTIMAL' },
-      { id: 'para', name: 'Paracetamol 650mg', nameHi: 'पैरासिटामोल 650mg', category: 'Antipyretics', stock: 350, minThreshold: 100, unit: 'Boxes', expiryDate: '2028-04', status: 'OPTIMAL' },
-      { id: 'ors', name: 'ORS Packets', nameHi: 'ओआरएस पैकेट्स', category: 'Electrolytes', stock: 600, minThreshold: 200, unit: 'Packs', expiryDate: '2028-02', status: 'OPTIMAL' },
-      { id: 'iv', name: 'IV Fluids (RL)', nameHi: 'आईवी फ्लुइड्स', category: 'Fluids', stock: 180, minThreshold: 50, unit: 'Bottles', expiryDate: '2027-05', status: 'OPTIMAL' }
-    ],
-    beds: { total: 40, occupied: 28, available: 12, icuTotal: 8, icuOccupied: 5 },
-    staff: { doctorsExpected: 12, doctorsPresent: 11, nursesExpected: 24, nursesPresent: 22, attendanceRate: 92 },
-    footfall: { currentQueue: 28, dailyTotal: 245, estimatedWaitMinutes: 18, triageUrgent: 6 }
-  },
-  {
-    id: 'phc-gamma',
-    name: 'PHC Gamma (Kotkasim)',
-    nameHi: 'प्राथमिक स्वास्थ्य केंद्र गामा (कोटकासिम)',
-    type: 'PHC',
-    location: 'East District Zone',
-    status: 'WARNING',
-    inventory: [
-      { id: 'amox', name: 'Amoxicillin 500mg', nameHi: 'एमोक्सिसिलिन 500mg', category: 'Antibiotics', stock: 48, minThreshold: 50, unit: 'Boxes', expiryDate: '2027-04', status: 'LOW' },
-      { id: 'para', name: 'Paracetamol 650mg', nameHi: 'पैरासिटामोल 650mg', category: 'Antipyretics', stock: 95, minThreshold: 40, unit: 'Boxes', expiryDate: '2027-09', status: 'OPTIMAL' },
-      { id: 'ors', name: 'ORS Packets', nameHi: 'ओआरएस पैकेट्स', category: 'Electrolytes', stock: 120, minThreshold: 100, unit: 'Packs', expiryDate: '2027-11', status: 'OPTIMAL' },
-      { id: 'iv', name: 'IV Fluids (RL)', nameHi: 'आईवी फ्लुइड्स', category: 'Fluids', stock: 25, minThreshold: 30, unit: 'Bottles', expiryDate: '2026-10', status: 'LOW' }
-    ],
-    beds: { total: 12, occupied: 11, available: 1, icuTotal: 0, icuOccupied: 0 },
-    staff: { doctorsExpected: 4, doctorsPresent: 3, nursesExpected: 6, nursesPresent: 5, attendanceRate: 80 },
-    footfall: { currentQueue: 22, dailyTotal: 140, estimatedWaitMinutes: 34, triageUrgent: 4 }
-  },
-  {
-    id: 'phc-delta',
-    name: 'PHC Delta (Bansur)',
-    nameHi: 'प्राथमिक स्वास्थ्य केंद्र डेल्टा (बानसूर)',
-    type: 'PHC',
-    location: 'West District Zone',
-    status: 'OPTIMAL',
-    inventory: [
-      { id: 'amox', name: 'Amoxicillin 500mg', nameHi: 'एमोक्सिसिलिन 500mg', category: 'Antibiotics', stock: 85, minThreshold: 50, unit: 'Boxes', expiryDate: '2027-11', status: 'OPTIMAL' },
-      { id: 'para', name: 'Paracetamol 650mg', nameHi: 'पैरासिटामोल 650mg', category: 'Antipyretics', stock: 140, minThreshold: 40, unit: 'Boxes', expiryDate: '2028-02', status: 'OPTIMAL' },
-      { id: 'ors', name: 'ORS Packets', nameHi: 'ओआरएस पैकेट्स', category: 'Electrolytes', stock: 310, minThreshold: 100, unit: 'Packs', expiryDate: '2028-06', status: 'OPTIMAL' },
-      { id: 'iv', name: 'IV Fluids (RL)', nameHi: 'आईवी फ्लुइड्स', category: 'Fluids', stock: 60, minThreshold: 30, unit: 'Bottles', expiryDate: '2027-01', status: 'OPTIMAL' }
-    ],
-    beds: { total: 15, occupied: 9, available: 6, icuTotal: 0, icuOccupied: 0 },
-    staff: { doctorsExpected: 4, doctorsPresent: 4, nursesExpected: 8, nursesPresent: 8, attendanceRate: 100 },
-    footfall: { currentQueue: 10, dailyTotal: 95, estimatedWaitMinutes: 15, triageUrgent: 1 }
-  },
-  {
-    id: 'chc-epsilon',
-    name: 'CHC Epsilon (Behror)',
-    nameHi: 'सामुदायिक स्वास्थ्य केंद्र एप्सिलॉन (बहरोड़)',
-    type: 'CHC',
-    location: 'South District Zone',
-    status: 'OPTIMAL',
-    inventory: [
-      { id: 'amox', name: 'Amoxicillin 500mg', nameHi: 'एमोक्सिसिलिन 500mg', category: 'Antibiotics', stock: 190, minThreshold: 80, unit: 'Boxes', expiryDate: '2027-09', status: 'OPTIMAL' },
-      { id: 'para', name: 'Paracetamol 650mg', nameHi: 'पैरासिटामोल 650mg', category: 'Antipyretics', stock: 280, minThreshold: 100, unit: 'Boxes', expiryDate: '2028-03', status: 'OPTIMAL' },
-      { id: 'ors', name: 'ORS Packets', nameHi: 'ओआरएस पैकेट्स', category: 'Electrolytes', stock: 450, minThreshold: 200, unit: 'Packs', expiryDate: '2028-01', status: 'OPTIMAL' },
-      { id: 'iv', name: 'IV Fluids (RL)', nameHi: 'आईवी फ्लुइड्स', category: 'Fluids', stock: 140, minThreshold: 50, unit: 'Bottles', expiryDate: '2027-04', status: 'OPTIMAL' }
-    ],
-    beds: { total: 50, occupied: 32, available: 18, icuTotal: 10, icuOccupied: 7 },
-    staff: { doctorsExpected: 15, doctorsPresent: 14, nursesExpected: 30, nursesPresent: 29, attendanceRate: 95 },
-    footfall: { currentQueue: 35, dailyTotal: 310, estimatedWaitMinutes: 20, triageUrgent: 5 }
-  }
-];
 
 const INITIAL_LOGS: LogEntry[] = [
   { id: 'log-1', timestamp: new Date(Date.now() - 3600000 * 3).toLocaleTimeString(), type: 'INFO', message: 'All 5 health centres finished morning telemetry sync successfully.', messageHi: 'सभी 5 स्वास्थ्य केंद्रों ने सुबह का टेलीमेट्री सिंक सफलतापूर्वक पूरा किया।', facility: 'District HQ' },
@@ -243,7 +157,7 @@ export const useHealthStore = create<HealthStore>((set, get) => ({
   syncNotification: null,
   crisisMode: false,
   transferApproved: false,
-  facilities: INITIAL_FACILITIES,
+  facilities: alwarFacilities,
   logs: INITIAL_LOGS,
   diagnosticTests: INITIAL_DIAGNOSTICS,
   staffMembers: INITIAL_STAFF,

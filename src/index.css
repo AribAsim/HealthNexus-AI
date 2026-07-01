@@ -61,6 +61,25 @@
 
 * {
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  caret-color: transparent;
+}
+
+/* Native App Feel: Disable text cursor & selection on static elements */
+body, p, li, button, span, div, table, tr, td, th, h1, h2, h3, h4, h5, h6, nav, header, aside, section, label, strong, em, small {
+  user-select: none;
+  cursor: default;
+}
+
+/* Allow text selection in inputs and explicit readable text containers */
+input, textarea, [contenteditable="true"], .selectable-text {
+  user-select: text !important;
+  cursor: text !important;
+  caret-color: auto !important;
+}
+
+/* Ensure interactive controls have pointer cursors */
+a, button, select, option, [onClick], .cursor-pointer, .material-symbols-outlined {
+  cursor: pointer !important;
 }
 
 @layer base {

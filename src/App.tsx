@@ -1,6 +1,18 @@
 import { useState, useEffect } from 'react';
 import { useHealthStore } from './store';
 import { askExecutiveAssistant } from './ai';
+import DistrictMap from './modules/map/DistrictMap';
+import ForecastingChart from './modules/ai/ForecastingChart';
+import VoiceReporter from './modules/voice/VoiceReporter';
+import { jsPDF } from 'jspdf';
+import ExecutiveIntelligence from './modules/dashboard/ExecutiveIntelligence';
+import DiseaseIntelligence from './modules/dashboard/DiseaseIntelligence';
+import PerformanceAnalytics from './modules/dashboard/PerformanceAnalytics';
+import NightlyWorkflow from './modules/dashboard/NightlyWorkflow';
+import ResourceSimulator from './modules/simulation/ResourceSimulator';
+import StockScanner from './modules/inventory/StockScanner';
+import AIExplainability from './modules/dashboard/AIExplainability';
+import DemoStoryMode from './modules/dashboard/DemoStoryMode';
 
 const renderMarkdownLine = (line: string) => {
   let displayLine = line;
@@ -70,6 +82,26 @@ export default function App() {
   const [aiLoading, setAiLoading] = useState(false);
   const [selectedFacilityId, setSelectedFacilityId] = useState('phc-alpha');
   const [inventoryFilter, setInventoryFilter] = useState('All');
+  const [showLangMenu, setShowLangMenu] = useState(false);
+  const [demoStep, setDemoStep] = useState<number | null>(null);
+
+  const startDemo = () => {
+    setDemoStep(1);
+    setActiveTab('dashboard');
+  };
+
+  const nextDemoStep = () => {
+    if (demoStep === 1) {
+      simulateCrisis();
+      setDemoStep(2);
+    } else if (demoStep === 2) {
+      approveTransfer();
+      setDemoStep(3);
+    } else if (demoStep === 3) {
+      exportRedistributionReportPDF();
+      setDemoStep(null);
+    }
+  };
 
   // Trigger micro-interaction for chart bars when rendered
   useEffect(() => {
@@ -97,6 +129,34 @@ export default function App() {
     }
   };
 
+  const exportRedistributionReportPDF = () => {
+    const doc = new jsPDF();
+    doc.setFontSize(22);
+    doc.text("HealthNexus AI - Emergency Redistribution Report", 14, 20);
+    doc.setFontSize(12);
+    doc.text(`Date: ${new Date().toLocaleDateString()}`, 14, 28);
+    doc.text("Status: EXECUTED (Crisis Averted)", 14, 34);
+    doc.setFontSize(14);
+    doc.text("1. Event Details:", 14, 46);
+    doc.setFontSize(10);
+    doc.text("- Source Facility: CHC Beta (Tijara) [Surplus Hub]", 18, 52);
+    doc.text("- Destination Facility: PHC Alpha (Mundawar) [Crisis Point]", 18, 58);
+    doc.text("- Transferred Stock: Amoxicillin 500mg - 50 Boxes", 18, 64);
+    doc.setFontSize(14);
+    doc.text("2. Operational Impact:", 14, 76);
+    doc.setFontSize(10);
+    doc.text("- PHC Alpha stock replenished to 62 Boxes (above safety threshold of 50).", 18, 82);
+    doc.text("- Target Stockout Date extended from 5 days to 30+ days.", 18, 88);
+    doc.text("- CHC Beta retained 130 Boxes (comfortable buffer level).", 18, 94);
+    doc.setFontSize(14);
+    doc.text("3. Compliance & Telemetry:", 14, 106);
+    doc.setFontSize(10);
+    doc.text("- Logged to State NHM Portal ledger.", 18, 112);
+    doc.text("- Digital verification completed on-device.", 18, 118);
+    doc.text("- Security Hash: 8F5A6C3D2E1B0A9F", 18, 124);
+    doc.save("emergency-redistribution-report.pdf");
+  };
+
   const isHi = language === 'hi';
   const isReg = language === 'reg';
 
@@ -117,26 +177,38 @@ export default function App() {
               District Portal
             </span>
           </span>
-          {/* Language Tabs */}
-          <div className="hidden md:flex gap-md ml-xl items-center">
-            <span 
-              onClick={() => setLanguage('en')}
-              className={`font-body-md text-body-md cursor-pointer pb-1 transition-colors ${language === 'en' ? 'text-primary border-b-2 border-primary font-bold' : 'text-secondary hover:bg-surface-container px-sm rounded'}`}
+          {/* Language Dropdown */}
+          <div className="relative ml-xl">
+            <button 
+              onClick={() => setShowLangMenu(!showLangMenu)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold border border-outline-variant bg-surface hover:bg-surface-container transition-all shadow-sm text-secondary cursor-pointer"
             >
-              English
-            </span>
-            <span 
-              onClick={() => setLanguage('hi')}
-              className={`font-body-md text-body-md cursor-pointer pb-1 transition-colors ${language === 'hi' ? 'text-primary border-b-2 border-primary font-bold' : 'text-secondary hover:bg-surface-container px-sm rounded'}`}
-            >
-              Hindi
-            </span>
-            <span 
-              onClick={() => setLanguage('reg')}
-              className={`font-body-md text-body-md cursor-pointer pb-1 transition-colors ${language === 'reg' ? 'text-primary border-b-2 border-primary font-bold' : 'text-secondary hover:bg-surface-container px-sm rounded'}`}
-            >
-              Regional
-            </span>
+              <span className="material-symbols-outlined text-base">translate</span>
+              {language === 'en' ? 'English' : language === 'hi' ? 'Hindi' : 'Regional'}
+              <span className="material-symbols-outlined text-xs">expand_more</span>
+            </button>
+            {showLangMenu && (
+              <div className="absolute left-0 mt-1 w-32 bg-surface border border-outline-variant rounded-lg shadow-lg py-1 z-50 animate-fade-in">
+                <button
+                  onClick={() => { setLanguage('en'); setShowLangMenu(false); }}
+                  className={`w-full text-left px-4 py-2 text-xs font-bold hover:bg-surface-container-high transition-colors ${language === 'en' ? 'text-primary bg-primary-container/20' : 'text-secondary'}`}
+                >
+                  English
+                </button>
+                <button
+                  onClick={() => { setLanguage('hi'); setShowLangMenu(false); }}
+                  className={`w-full text-left px-4 py-2 text-xs font-bold hover:bg-surface-container-high transition-colors ${language === 'hi' ? 'text-primary bg-primary-container/20' : 'text-secondary'}`}
+                >
+                  Hindi (हिन्दी)
+                </button>
+                <button
+                  onClick={() => { setLanguage('reg'); setShowLangMenu(false); }}
+                  className={`w-full text-left px-4 py-2 text-xs font-bold hover:bg-surface-container-high transition-colors ${language === 'reg' ? 'text-primary bg-primary-container/20' : 'text-secondary'}`}
+                >
+                  Regional
+                </button>
+              </div>
+            )}
           </div>
         </div>
 
@@ -185,6 +257,15 @@ export default function App() {
             </button>
           </div>
 
+          {/* Guided Demo Button */}
+          <button
+            onClick={startDemo}
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-secondary text-on-secondary hover:opacity-90 text-xs font-bold rounded-lg shadow transition-all cursor-pointer"
+          >
+            <span className="material-symbols-outlined text-base">lightbulb</span>
+            {isHi ? 'गाइडेड डेमो' : 'Guided Demo'}
+          </button>
+
           {/* Simulate Crisis Trigger Button (The Killer Demo Initiator) */}
           <button
             onClick={simulateCrisis}
@@ -216,6 +297,34 @@ export default function App() {
           <span className="material-symbols-outlined text-primary cursor-pointer hover:bg-surface-container p-sm rounded transition-colors">account_circle</span>
         </div>
       </header>
+
+      {/* Guided Demo Steps Banner */}
+      {demoStep !== null && (
+        <div className="bg-primary text-white py-3 px-6 flex items-center justify-between shadow-md border-b border-outline-variant z-50 transition-all animate-fade-in">
+          <div className="flex items-center space-x-3">
+            <span className="material-symbols-outlined text-xl text-white animate-bounce">tips_and_updates</span>
+            <span className="text-sm font-bold">
+              {demoStep === 1 && (isHi ? 'चरण 1: संकट शुरू करें। जारी रखने के लिए अगला क्लिक करें।' : 'Step 1: Outbreak Surge. Click Next to trigger the early warning AI alert.')}
+              {demoStep === 2 && (isHi ? 'चरण 2: संकट सक्रिय। स्थानांतरित करने के लिए अगला क्लिक करें।' : 'Step 2: Risk Flagged. AI recommends redistributing 50 boxes of Amoxicillin from surplus. Click Next to authorize.')}
+              {demoStep === 3 && (isHi ? 'चरण 3: संकट टल गया! रिपोर्ट पीडीएफ डाउनलोड करने के लिए अगला क्लिक करें।' : 'Step 3: Crisis Averted! Inventory balanced. Click Next to download the generated PDF transport manifest.')}
+            </span>
+          </div>
+          <div className="flex items-center gap-3">
+            <button 
+              onClick={nextDemoStep}
+              className="bg-white text-primary hover:bg-surface-container-high px-4 py-1.5 rounded-md text-xs font-extrabold shadow-sm transition cursor-pointer"
+            >
+              {demoStep === 3 ? (isHi ? 'खत्म करें' : 'Finish & Export') : (isHi ? 'अगला' : 'Next Step')}
+            </button>
+            <button 
+              onClick={() => setDemoStep(null)}
+              className="text-white/85 hover:text-white text-xs font-bold px-3 py-1.5 rounded-md transition cursor-pointer"
+            >
+              Skip
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Offline Sync Success Banner */}
       {syncNotification && (
@@ -309,7 +418,6 @@ export default function App() {
               onClick={simulateCrisis}
               className="w-full bg-primary text-white py-sm rounded-lg font-label-bold mb-md hover:opacity-90 transition-opacity flex items-center justify-center gap-2 shadow"
             >
-              <span className="material-symbols-outlined text-base">bolt</span>
               {isHi ? 'एआई रिपोर्ट जनरेट करें' : 'Generate AI Report'}
             </button>
             <div className="space-y-1">
@@ -332,6 +440,13 @@ export default function App() {
           {activeTab === 'dashboard' && (
             <div className="space-y-6">
               
+              {/* Executive Intelligence Widget */}
+              <ExecutiveIntelligence
+                language={language}
+                onExecuteAIResponse={() => { simulateCrisis(); }}
+                transferApproved={transferApproved}
+              />
+
               {/* District Overview Section */}
               <section className="mb-lg">
                 <h2 className="font-headline-md text-headline-md text-primary mb-md">
@@ -375,6 +490,17 @@ export default function App() {
                   </div>
                 </div>
               </section>
+
+              {/* District Map Interactive Visualization */}
+              <section className="mb-lg">
+                <DistrictMap 
+                  language={language} 
+                  onFacilitySelect={(f) => setSelectedFacilityId(f.id)} 
+                />
+              </section>
+
+              {/* Disease Intelligence Hotspot Widget */}
+              <DiseaseIntelligence language={language} />
 
               {/* THE UNFORGETTABLE DEMO FLOW SECTION (CRISIS -> RECOMMENDATION -> APPROVAL -> IMPACT) */}
               {crisisMode && (
@@ -481,12 +607,21 @@ export default function App() {
                       </div>
 
                       {transferApproved ? (
-                        <div className="p-4 bg-green-50 border border-green-300 rounded-xl flex items-center space-x-3 text-green-900 animate-fade-in">
-                          <span className="material-symbols-outlined text-3xl text-green-700 flex-shrink-0">check_circle</span>
-                          <div className="text-xs space-y-1">
-                            <span className="font-extrabold block text-green-800">IMPACT ACHIEVED</span>
-                            <span>PHC Alpha stock restored to <strong>62 Boxes</strong>. Crisis successfully averted!</span>
+                        <div className="p-4 bg-green-50 border border-green-300 rounded-xl flex flex-col gap-2 text-green-900 animate-fade-in">
+                          <div className="flex items-center space-x-3">
+                            <span className="material-symbols-outlined text-3xl text-green-700 flex-shrink-0">check_circle</span>
+                            <div className="text-xs space-y-1">
+                              <span className="font-extrabold block text-green-800">IMPACT ACHIEVED</span>
+                              <span>PHC Alpha stock restored to <strong>62 Boxes</strong>. Crisis successfully averted!</span>
+                            </div>
                           </div>
+                          <button
+                            onClick={exportRedistributionReportPDF}
+                            className="mt-2 w-full py-2 bg-green-700 hover:bg-green-800 text-white font-bold text-xs rounded-lg shadow flex items-center justify-center gap-2 transition-all"
+                          >
+                            <span className="material-symbols-outlined text-sm">download</span>
+                            {isHi ? 'रिपोर्ट पीडीएफ डाउनलोड करें' : 'Download Report (PDF)'}
+                          </button>
                         </div>
                       ) : (
                         <button
@@ -899,7 +1034,11 @@ export default function App() {
           {/* TAB 2: INVENTORY MANAGEMENT & PHARMACIST PORTAL */}
           {activeTab === 'inventory' && (
             <div className="space-y-6 max-w-7xl mx-auto">
+              {/* AI Computer Vision Stock Scanner */}
+              <StockScanner language={language} />
+
               {/* Top Pharmacist Portal Quick Entry Box */}
+
               <div className="bg-surface-container-lowest border border-outline-variant rounded-2xl p-6 shadow-sm space-y-4">
                 <div className="flex flex-wrap items-center justify-between gap-4 border-b border-outline-variant pb-4">
                   <div className="flex items-center space-x-3">
@@ -1575,19 +1714,13 @@ export default function App() {
 
               {/* Predictive Modelling Grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="bg-surface-container-lowest border border-outline-variant rounded-2xl p-6 shadow-sm space-y-4">
-                  <div className="flex items-center space-x-2 text-primary font-headline-sm text-base border-b border-outline-variant pb-3">
-                    <span className="material-symbols-outlined text-xl">trending_up</span>
-                    <h3>Epidemic Warning & Seasonal Demand Forecast</h3>
-                  </div>
-                  <p className="text-xs text-on-surface-variant leading-relaxed">
-                    <strong>AI Finding:</strong> Automated correlation analysis between outpatient triage check-ins and regional pharmacy deductions highlights a <strong>35% month-over-month increase</strong> in acute respiratory infection symptoms across North and East District Zones (specifically Mundawar and Kotkasim).
-                  </p>
-                  <div className="p-4 bg-surface-container-low rounded-xl border border-outline-variant space-y-2 text-xs">
-                    <span className="font-extrabold text-primary block">Recommended Administrative Action:</span>
-                    <p className="text-on-surface-variant">Maintain a minimum buffer stock of <strong>80 boxes of Amoxicillin</strong> and <strong>100 packs of ORS</strong> across all affected primary health centres for the upcoming 14 days.</p>
-                  </div>
-                </div>
+                <ForecastingChart 
+                  itemName="Amoxicillin 500mg"
+                  currentStock={450}
+                  averageDailyUsage={32}
+                  facilityType="District Aggregated"
+                  language={language}
+                />
 
                 <div className="bg-surface-container-lowest border border-outline-variant rounded-2xl p-6 shadow-sm space-y-4">
                   <div className="flex items-center space-x-2 text-primary font-headline-sm text-base border-b border-outline-variant pb-3">
@@ -1603,8 +1736,21 @@ export default function App() {
                   </div>
                 </div>
               </div>
+
+              {/* Performance Analytics Leaderboard */}
+              <PerformanceAnalytics language={language} />
+
+              {/* Nightly AI Workflow Timeline */}
+              <NightlyWorkflow language={language} />
+
+              {/* Resource Simulation Engine */}
+              <ResourceSimulator language={language} />
+
+              {/* AI Explainability Panel */}
+              <AIExplainability language={language} transferApproved={transferApproved} />
             </div>
           )}
+
 
         </main>
       </div>
@@ -1629,6 +1775,14 @@ export default function App() {
           {isHi ? 'एचएल7/एफएचआईआर मानक संगत • संपूर्ण डेटा एंड-टू-एंड एन्क्रिप्टेड है' : 'HL7/FHIR Standards Compliant • All Telemetry Data is End-to-End Encrypted'}
         </p>
       </footer>
+      <DemoStoryMode
+        language={language}
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+        onSimulateCrisis={simulateCrisis}
+        transferApproved={transferApproved}
+      />
+      <VoiceReporter language={language} />
     </div>
   );
 }
