@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { useHealthStore } from './store';
-import { askExecutiveAssistant } from './ai';
 import DistrictMap from './modules/map/DistrictMap';
 import ForecastingChart from './modules/ai/ForecastingChart';
 import VoiceReporter from './modules/voice/VoiceReporter';
@@ -12,35 +11,10 @@ import NightlyWorkflow from './modules/dashboard/NightlyWorkflow';
 import ResourceSimulator from './modules/simulation/ResourceSimulator';
 import StockScanner from './modules/inventory/StockScanner';
 import AIExplainability from './modules/dashboard/AIExplainability';
-import DemoStoryMode from './modules/dashboard/DemoStoryMode';
 import AICopilot from './modules/dashboard/AICopilot';
+import { createPortal } from 'react-dom';
 
-const renderMarkdownLine = (line: string) => {
-  let displayLine = line;
-  let isBullet = false;
-  
-  if (displayLine.trim().startsWith('*')) {
-    displayLine = displayLine.replace(/^\s*\*\s*/, '• ');
-    isBullet = true;
-  } else if (displayLine.trim().startsWith('-')) {
-    displayLine = displayLine.replace(/^\s*-\s*/, '• ');
-    isBullet = true;
-  }
-  
-  const parts = displayLine.split('**');
-  const renderedText = parts.map((part, index) => {
-    if (index % 2 === 1) {
-      return <strong key={index} className="font-bold text-white">{part}</strong>;
-    }
-    return part;
-  });
 
-  return (
-    <span className={isBullet ? 'pl-1' : ''}>
-      {renderedText}
-    </span>
-  );
-};
 
 export default function App() {
   const {
@@ -72,37 +46,20 @@ export default function App() {
     addLog
   } = useHealthStore();
 
-  const [aiQuery, setAiQuery] = useState('');
-  const [aiResponse, setAiResponse] = useState<string>(
-    language === 'hi' ? 
-    '### 🏥 जिला स्वास्थ्य केंद्र कार्यकारी सारांश\n\n**मल्टीलिंग्वल एआई प्लेटफॉर्म** वास्तविक समय में जिले के प्रमुख केंद्रों (PHCs/CHCs) की निगरानी कर रहा है:\n\n1. **स्टॉक और इन्वेंटरी**: इन्वेंटरी स्तर अनुकूल हैं। "Simulate Crisis" बटन दबाकर आप आपातकालीन स्थिति और एआई पुनर्वितरण का परीक्षण कर सकते हैं।\n2. **मरीज फुटफॉल**: आज जिले में कुल **776 मरीजों** का पंजीकरण हुआ है। औसत प्रतीक्षा समय 15 से 34 मिनट के बीच है।\n3. **बिस्तर उपलब्धता**: PHC Gamma में बिस्तर क्षमता (91%) लगभग पूर्ण है।\n4. **कर्मचारी उपस्थिति**: जिले में कुल डॉक्टर उपस्थिति **92%** है।\n\n*नीचे दिए गए त्वरित प्रश्न चुनें या अपना खुद का प्रश्न टाइप करें।*' :
-    language === 'reg' ?
-    '### 🏥 പ്രാദേശിക ആരോഗ്യ കേന്ദ്രത്തിന്റെ സംഗ്രഹം\n\nജില്ലയിലെ പ്രമുഖ കേന്ദ്രങ്ങളിലെ തത്സമയ വിവരങ്ങൾ പ്ലാറ്റ്‌ഫോം നിരീക്ഷിക്കുന്നു:\n\n1. **മരുന്ന് സ്റ്റോക്ക്**: നിലവിലെ സ്റ്റോക്ക് തൃപ്തികരമാണ്. അടിയന്തര സാഹചര്യങ്ങളും എഐ പുനർവിതരണവും പരിശോധിക്കാൻ "Simulate Crisis" ബട്ടൺ അമർത്തുക.\n2. **രോഗികളുടെ എണ്ണം**: ഇന്ന് ആകെ **776 രോഗികൾ** രജിസ്റ്റർ ചെയ്തിട്ടുണ്ട്.\n3. **കിടക്കകളുടെ ലഭ്യത**: PHC ഗാമയിൽ 91% കിടക്കകളും നിറഞ്ഞിരിക്കുന്നു.\n4. **ജീവനക്കാരുടെ ഹാജർ**: ജില്ലയിലെ ഡോക്ടർമാരുടെ ഹാജർ **92%** ആണ്.' :
-    '### 🏥 District Health Network Executive Summary\n\nThe **Multilingual AI Health Platform** is actively monitoring real-time telemetry across district facilities:\n\n1. **Inventory Health**: Baseline inventory levels are currently stable. Click **"Simulate Crisis (Killer Demo)"** above to test the AI Early Stock-out Warning & Smart Redistribution engine.\n2. **Patient Footfall**: A total of **776 patients** have been logged today across the district. Estimated wait times range from 15 mins to 34 mins.\n3. **Bed Capacity**: PHC Gamma is nearing total capacity at **91% bed occupancy**.\n4. **Staff Coverage**: Overall physician attendance is excellent at **92% active coverage**.\n\n*Select a quick prompt below or type your own administrative query.*'
-  );
-  const [aiLoading, setAiLoading] = useState(false);
+
   const [selectedFacilityId, setSelectedFacilityId] = useState('phc-alpha');
   const [inventoryFilter, setInventoryFilter] = useState('All');
   const [showLangMenu, setShowLangMenu] = useState(false);
-  const [demoStep, setDemoStep] = useState<number | null>(null);
 
-  const startDemo = () => {
-    setDemoStep(1);
-    setActiveTab('dashboard');
-  };
+  // Modal and Drawer states for layout refactoring
+  const [showCrisisDrawer, setShowCrisisDrawer] = useState(false);
+  const [showDevConsole, setShowDevConsole] = useState(false);
+  const [showLogsDrawer, setShowLogsDrawer] = useState(false);
+  const [showScannerModal, setShowScannerModal] = useState(false);
+  const [showIntakeDrawer, setShowIntakeDrawer] = useState(false);
+  const [showSimulatorModal, setShowSimulatorModal] = useState(false);
+  const [showNightlyTimeline, setShowNightlyTimeline] = useState(false);
 
-  const nextDemoStep = () => {
-    if (demoStep === 1) {
-      simulateCrisis();
-      setDemoStep(2);
-    } else if (demoStep === 2) {
-      approveTransfer();
-      setDemoStep(3);
-    } else if (demoStep === 3) {
-      exportRedistributionReportPDF();
-      setDemoStep(null);
-    }
-  };
 
   // Trigger micro-interaction for chart bars when rendered
   useEffect(() => {
@@ -116,19 +73,7 @@ export default function App() {
     });
   }, [activeTab]);
 
-  const handleAskAI = async (query: string) => {
-    if (!query.trim()) return;
-    setAiLoading(true);
-    try {
-      const resp = await askExecutiveAssistant(query, facilities, language);
-      setAiResponse(resp);
-    } catch (error) {
-      console.error('AI request failed:', error);
-      setAiResponse('Error retrieving AI response. Please check network connection.');
-    } finally {
-      setAiLoading(false);
-    }
-  };
+
 
   const exportRedistributionReportPDF = () => {
     const doc = new jsPDF();
@@ -165,7 +110,7 @@ export default function App() {
   const totalAlerts = facilities.filter(f => f.status !== 'OPTIMAL').length + (crisisMode && !transferApproved ? 3 : 0);
 
   return (
-    <div className="bg-background text-on-surface font-body-md overflow-x-hidden min-h-screen flex flex-col">
+    <div className="bg-background text-on-surface font-body-md min-h-screen flex flex-col" style={{ overflowX: 'clip' }}>
       {/* TopNavBar matching Stitch format */}
       <header className="flex justify-between items-center w-full px-lg h-16 sticky top-0 z-50 bg-surface border-b border-outline-variant shadow-sm">
         <div className="flex items-center gap-md">
@@ -178,39 +123,6 @@ export default function App() {
               District Portal
             </span>
           </span>
-          {/* Language Dropdown */}
-          <div className="relative ml-xl">
-            <button 
-              onClick={() => setShowLangMenu(!showLangMenu)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold border border-outline-variant bg-surface hover:bg-surface-container transition-all shadow-sm text-secondary cursor-pointer"
-            >
-              <span className="material-symbols-outlined text-base">translate</span>
-              {language === 'en' ? 'English' : language === 'hi' ? 'Hindi' : 'Regional'}
-              <span className="material-symbols-outlined text-xs">expand_more</span>
-            </button>
-            {showLangMenu && (
-              <div className="absolute left-0 mt-1 w-32 bg-surface border border-outline-variant rounded-lg shadow-lg py-1 z-50 animate-fade-in">
-                <button
-                  onClick={() => { setLanguage('en'); setShowLangMenu(false); }}
-                  className={`w-full text-left px-4 py-2 text-xs font-bold hover:bg-surface-container-high transition-colors ${language === 'en' ? 'text-primary bg-primary-container/20' : 'text-secondary'}`}
-                >
-                  English
-                </button>
-                <button
-                  onClick={() => { setLanguage('hi'); setShowLangMenu(false); }}
-                  className={`w-full text-left px-4 py-2 text-xs font-bold hover:bg-surface-container-high transition-colors ${language === 'hi' ? 'text-primary bg-primary-container/20' : 'text-secondary'}`}
-                >
-                  Hindi (हिन्दी)
-                </button>
-                <button
-                  onClick={() => { setLanguage('reg'); setShowLangMenu(false); }}
-                  className={`w-full text-left px-4 py-2 text-xs font-bold hover:bg-surface-container-high transition-colors ${language === 'reg' ? 'text-primary bg-primary-container/20' : 'text-secondary'}`}
-                >
-                  Regional
-                </button>
-              </div>
-            )}
-          </div>
         </div>
 
         {/* Action Controls & Notifications */}
@@ -258,26 +170,41 @@ export default function App() {
             </button>
           </div>
 
-          {/* Guided Demo Button */}
-          <button
-            onClick={startDemo}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-secondary text-on-secondary hover:opacity-90 text-xs font-bold rounded-lg shadow transition-all cursor-pointer"
-          >
-            <span className="material-symbols-outlined text-base">lightbulb</span>
-            {isHi ? 'गाइडेड डेमो' : 'Guided Demo'}
-          </button>
+          {/* Language Dropdown (Circle Button) */}
+          <div className="relative">
+              <button 
+                onClick={() => setShowLangMenu(!showLangMenu)}
+                className="flex items-center justify-center w-10 h-10 rounded-full border border-outline-variant bg-surface hover:bg-surface-container transition-all shadow-sm text-secondary cursor-pointer"
+                title="Translate Language"
+              >
+                <span className="material-symbols-outlined text-lg">translate</span>
+              </button>
+              {showLangMenu && (
+                <div className="absolute right-0 mt-2 w-32 bg-surface border border-outline-variant rounded-lg shadow-lg py-1 z-50 animate-fade-in">
+                  <button
+                    onClick={() => { setLanguage('en'); setShowLangMenu(false); }}
+                    className={`w-full text-left px-4 py-2 text-xs font-bold hover:bg-surface-container-high transition-colors ${language === 'en' ? 'text-primary bg-primary-container/20' : 'text-secondary'}`}
+                  >
+                    English
+                  </button>
+                  <button
+                    onClick={() => { setLanguage('hi'); setShowLangMenu(false); }}
+                    className={`w-full text-left px-4 py-2 text-xs font-bold hover:bg-surface-container-high transition-colors ${language === 'hi' ? 'text-primary bg-primary-container/20' : 'text-secondary'}`}
+                  >
+                    Hindi (हिन्दी)
+                  </button>
+                  <button
+                    onClick={() => { setLanguage('reg'); setShowLangMenu(false); }}
+                    className={`w-full text-left px-4 py-2 text-xs font-bold hover:bg-surface-container-high transition-colors ${language === 'reg' ? 'text-primary bg-primary-container/20' : 'text-secondary'}`}
+                  >
+                    Regional
+                  </button>
+                </div>
+              )}
+            </div>
 
-          {/* Simulate Crisis Trigger Button (The Killer Demo Initiator) */}
-          <button
-            onClick={simulateCrisis}
-            className="flex items-center gap-1.5 px-3.5 py-1.5 bg-error text-on-error hover:opacity-90 text-xs font-bold rounded-lg shadow transition-all animate-pulse-glow"
-          >
-            <span className="material-symbols-outlined text-base">warning</span>
-            {isHi ? 'संकट सिमुलेशन (Killer Demo)' : isReg ? 'പ്രതിസന്ധി സിമുലേഷൻ' : 'Simulate Crisis (Killer Demo)'}
-          </button>
-
-          {/* Notifications Menu */}
-          <div className="relative cursor-pointer hover:bg-surface-container p-sm rounded transition-colors group">
+            {/* Notifications Menu */}
+            <div className="relative cursor-pointer hover:bg-surface-container p-sm rounded transition-colors group">
             <span className="material-symbols-outlined text-primary">notifications</span>
             <span className="absolute top-1 right-1 w-4 h-4 bg-error text-[10px] text-white flex items-center justify-center rounded-full font-bold">
               {totalAlerts}
@@ -299,33 +226,7 @@ export default function App() {
         </div>
       </header>
 
-      {/* Guided Demo Steps Banner */}
-      {demoStep !== null && (
-        <div className="bg-primary text-white py-3 px-6 flex items-center justify-between shadow-md border-b border-outline-variant z-50 transition-all animate-fade-in">
-          <div className="flex items-center space-x-3">
-            <span className="material-symbols-outlined text-xl text-white animate-bounce">tips_and_updates</span>
-            <span className="text-sm font-bold">
-              {demoStep === 1 && (isHi ? 'चरण 1: संकट शुरू करें। जारी रखने के लिए अगला क्लिक करें।' : 'Step 1: Outbreak Surge. Click Next to trigger the early warning AI alert.')}
-              {demoStep === 2 && (isHi ? 'चरण 2: संकट सक्रिय। स्थानांतरित करने के लिए अगला क्लिक करें।' : 'Step 2: Risk Flagged. AI recommends redistributing 50 boxes of Amoxicillin from surplus. Click Next to authorize.')}
-              {demoStep === 3 && (isHi ? 'चरण 3: संकट टल गया! रिपोर्ट पीडीएफ डाउनलोड करने के लिए अगला क्लिक करें।' : 'Step 3: Crisis Averted! Inventory balanced. Click Next to download the generated PDF transport manifest.')}
-            </span>
-          </div>
-          <div className="flex items-center gap-3">
-            <button 
-              onClick={nextDemoStep}
-              className="bg-white text-primary hover:bg-surface-container-high px-4 py-1.5 rounded-md text-xs font-extrabold shadow-sm transition cursor-pointer"
-            >
-              {demoStep === 3 ? (isHi ? 'खत्म करें' : 'Finish & Export') : (isHi ? 'अगला' : 'Next Step')}
-            </button>
-            <button 
-              onClick={() => setDemoStep(null)}
-              className="text-white/85 hover:text-white text-xs font-bold px-3 py-1.5 rounded-md transition cursor-pointer"
-            >
-              Skip
-            </button>
-          </div>
-        </div>
-      )}
+
 
       {/* Offline Sync Success Banner */}
       {syncNotification && (
@@ -371,11 +272,18 @@ export default function App() {
               <span className="font-body-md text-body-md">{isHi ? 'जिला डैशबोर्ड' : 'District Dashboard'}</span>
             </button>
             <button 
+              onClick={() => setActiveTab('copilot')}
+              className={`w-full flex items-center gap-md px-md py-sm font-bold rounded-lg transition-colors ${activeTab === 'copilot' ? 'bg-secondary-container text-on-secondary-container' : 'text-on-surface-variant hover:bg-surface-container-high'}`}
+            >
+              <span className="material-symbols-outlined">smart_toy</span>
+              <span className="font-body-md text-body-md whitespace-nowrap">{isHi ? 'एआई कोपायलट' : 'AI Copilot'}</span>
+            </button>
+            <button 
               onClick={() => { setActiveTab('inventory'); setRole('Pharmacist'); }}
-              className={`w-full flex items-center gap-md px-md py-sm font-bold rounded-lg transition-colors ${activeTab === 'inventory' ? 'bg-secondary-container text-on-secondary-container' : 'text-on-surface-variant hover:bg-surface-container-high'}`}
+              className={`w-full flex items-center gap-md px-md py-sm font-bold rounded-lg transition-colors whitespace-nowrap ${activeTab === 'inventory' ? 'bg-secondary-container text-on-secondary-container' : 'text-on-surface-variant hover:bg-surface-container-high'}`}
             >
               <span className="material-symbols-outlined">inventory_2</span>
-              <span className="font-body-md text-body-md">{isHi ? 'इन्वेंटरी प्रबंधन' : 'Inventory Management'}</span>
+              <span className="font-body-md text-body-md whitespace-nowrap">{isHi ? 'इन्वेंटरी प्रबंधन' : 'Inventory Management'}</span>
             </button>
             <button 
               onClick={() => { setActiveTab('patients'); setRole('Doctor'); }}
@@ -412,6 +320,7 @@ export default function App() {
               <span className="material-symbols-outlined">analytics</span>
               <span className="font-body-md text-body-md">{isHi ? 'एआई एनालिटिक्स' : 'Analytics & AI'}</span>
             </button>
+            
           </div>
 
           <div className="p-md mt-auto border-t border-outline-variant">
@@ -505,145 +414,27 @@ export default function App() {
 
               {/* THE UNFORGETTABLE DEMO FLOW SECTION (CRISIS -> RECOMMENDATION -> APPROVAL -> IMPACT) */}
               {crisisMode && (
-                <div className="bg-primary-fixed border-2 border-primary rounded-2xl p-6 shadow-lg space-y-6 animate-fade-in relative overflow-hidden">
-                  <div className="absolute top-0 right-0 bg-primary text-white text-[10px] font-extrabold uppercase px-3 py-1 rounded-bl-xl tracking-widest shadow-sm">
-                    {isHi ? 'एआई क्राइसिस आर्केस्ट्रेशन फ्लो' : 'AI Crisis Orchestration Flow'}
-                  </div>
-
-                  <div className="flex items-center space-x-3">
-                    <div className="bg-white p-3 rounded-xl text-error border border-error-container shadow-sm">
-                      <span className="material-symbols-outlined text-3xl animate-pulse">warning</span>
-                    </div>
-                    <div>
-                      <h2 className="text-xl font-extrabold text-on-primary-fixed tracking-tight">
-                        {isHi ? 'आपातकालीन घटना: एमोक्सिसिलिन स्टॉक-आउट चेतावनी' : 'Crisis Event: Amoxicillin Early Stock-out Warning'}
-                      </h2>
-                      <p className="text-xs text-on-primary-fixed-variant">
-                        {isHi ? 'अचानक श्वसन संक्रमण मामलों के कारण PHC Alpha में स्टॉक भारी गिरावट पर है।' : 'Triggered by a sudden local respiratory infection surge at PHC Alpha.'}
-                      </p>
+                <div className="bg-error-container border border-error/20 p-4 rounded-xl flex items-center justify-between shadow-sm animate-pulse-glow mb-lg">
+                  <div className="flex items-center space-x-3 text-on-error-container">
+                    <span className="material-symbols-outlined text-error animate-pulse">warning</span>
+                    <div className="text-xs">
+                      <span className="font-extrabold block text-error uppercase">Active Stockout Crisis</span>
+                      <span>{isHi ? 'PHC Alpha में दवा का स्टॉक संकट। जेमिनी ने पुनर्वितरण योजना बनाई है।' : 'Amoxicillin stock depletion warning at PHC Alpha. Gemini has proposed a redistribution plan.'}</span>
                     </div>
                   </div>
-
-                  {/* Flow Stages Breakdown */}
-                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 pt-2">
-                    
-                    {/* Stage 1: Crisis */}
-                    <div className="bg-white border border-outline-variant rounded-xl p-5 space-y-3 relative shadow-sm">
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold text-error uppercase tracking-wider">Step 1: The Crisis</span>
-                        <span className="px-2 py-0.5 bg-error-container text-on-error-container text-[10px] font-bold rounded-full">Critical Status</span>
-                      </div>
-                      <h3 className="text-base font-bold text-primary">PHC Alpha (Mundawar)</h3>
-                      <div className="p-3 bg-error-container/50 rounded-lg border border-error-container space-y-2">
-                        <div className="flex justify-between text-xs">
-                          <span className="text-on-surface-variant">Amoxicillin 500mg:</span>
-                          <span className="font-extrabold text-error">12 Boxes Remaining</span>
-                        </div>
-                        <div className="flex justify-between text-xs">
-                          <span className="text-on-surface-variant">Minimum Threshold:</span>
-                          <span className="font-bold text-secondary">50 Boxes</span>
-                        </div>
-                        <div className="w-full bg-surface-container h-1.5 rounded-full overflow-hidden">
-                          <div className="bg-error h-full w-[24%]"></div>
-                        </div>
-                      </div>
-                      <p className="text-xs text-on-surface-variant">
-                        <strong>Gemini Forecast:</strong> Total stock depletion in <strong>5 days</strong> without administrative intervention.
-                      </p>
-                    </div>
-
-                    {/* Stage 2: AI Recommendation & Visual Route */}
-                    <div className="bg-white border border-outline-variant rounded-xl p-5 space-y-3 relative flex flex-col justify-between shadow-sm">
-                      <div className="space-y-3">
-                        <div className="flex items-center justify-between">
-                          <span className="text-xs font-bold text-primary uppercase tracking-wider">Step 2: AI Smart Redistribution</span>
-                          <span className="px-2 py-0.5 bg-primary-fixed text-on-primary-fixed-variant text-[10px] font-bold rounded-full">Gemini 1.5 Pro</span>
-                        </div>
-                        <h3 className="text-base font-bold text-primary">CHC Beta (Tijara) Surplus</h3>
-                        <p className="text-xs text-on-surface-variant">
-                          CHC Beta possesses <strong>220 boxes</strong> of Amoxicillin (140 above buffer). AI recommends transferring 50 boxes to balance district health levels.
-                        </p>
-                      </div>
-
-                      {/* Route Illustration */}
-                      <div className="p-3 bg-surface-container-low rounded-lg border border-outline-variant flex items-center justify-between">
-                        <div className="text-center">
-                          <span className="text-[10px] text-secondary font-bold block">DONOR</span>
-                          <span className="text-xs font-bold text-primary">CHC Beta</span>
-                        </div>
-                        <div className="flex-1 px-4 flex flex-col items-center">
-                          <span className="text-[10px] font-extrabold text-primary mb-1">50 BOXES TRANSFER</span>
-                          <div className="w-full flex items-center">
-                            <div className="h-1 flex-1 bg-outline-variant relative overflow-hidden rounded-full">
-                              <div className="absolute top-0 left-0 h-full w-full bg-primary animate-[pulse_1.5s_infinite]"></div>
-                            </div>
-                            <span className="material-symbols-outlined text-base text-primary ml-1">arrow_forward</span>
-                          </div>
-                          <span className="text-[10px] text-secondary mt-1 flex items-center gap-1">
-                            <span className="material-symbols-outlined text-[12px]">schedule</span> Est. Time: 25 Mins
-                          </span>
-                        </div>
-                        <div className="text-center">
-                          <span className="text-[10px] text-secondary font-bold block">DEFICIT</span>
-                          <span className="text-xs font-bold text-error">PHC Alpha</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Stage 3 & 4: Approval & Impact */}
-                    <div className="bg-white border border-outline-variant rounded-xl p-5 space-y-4 relative flex flex-col justify-between shadow-sm">
-                      <div>
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="text-xs font-bold text-green-700 uppercase tracking-wider">Step 3 & 4: Approval & Impact</span>
-                          <span className="px-2 py-0.5 bg-green-100 text-green-800 text-[10px] font-bold rounded-full">One-Click SLA</span>
-                        </div>
-                        <h3 className="text-base font-bold text-primary">
-                          {transferApproved ? 'Redistribution Executed Successfully!' : 'Administrative Authorization Pending'}
-                        </h3>
-                        <p className="text-xs text-on-surface-variant mt-1">
-                          {transferApproved 
-                          ? 'Inventory ledgers instantly balanced across facilities. Automated transport manifest dispatched.' 
-                          : 'Review AI recommendation and execute digital sign-off to instantly avert the forecast stock-out.'}
-                        </p>
-                      </div>
-
-                      {transferApproved ? (
-                        <div className="p-4 bg-green-50 border border-green-300 rounded-xl flex flex-col gap-2 text-green-900 animate-fade-in">
-                          <div className="flex items-center space-x-3">
-                            <span className="material-symbols-outlined text-3xl text-green-700 flex-shrink-0">check_circle</span>
-                            <div className="text-xs space-y-1">
-                              <span className="font-extrabold block text-green-800">IMPACT ACHIEVED</span>
-                              <span>PHC Alpha stock restored to <strong>62 Boxes</strong>. Crisis successfully averted!</span>
-                            </div>
-                          </div>
-                          <button
-                            onClick={exportRedistributionReportPDF}
-                            className="mt-2 w-full py-2 bg-green-700 hover:bg-green-800 text-white font-bold text-xs rounded-lg shadow flex items-center justify-center gap-2 transition-all"
-                          >
-                            <span className="material-symbols-outlined text-sm">download</span>
-                            {isHi ? 'रिपोर्ट पीडीएफ डाउनलोड करें' : 'Download Report (PDF)'}
-                          </button>
-                        </div>
-                      ) : (
-                        <button
-                          onClick={approveTransfer}
-                          className="w-full py-3 bg-primary hover:opacity-90 text-white font-extrabold text-sm rounded-xl shadow-md active:scale-95 transition-all flex items-center justify-center gap-2 group"
-                        >
-                          <span className="material-symbols-outlined text-xl text-white group-hover:scale-110 transition-transform">check</span>
-                          {isHi ? 'पुनर्वितरण तुरंत अधिकृत करें' : 'Authorize 50 Boxes Transfer'}
-                        </button>
-                      )}
-                    </div>
-
-                  </div>
+                  <button 
+                    onClick={() => setShowCrisisDrawer(true)}
+                    className="bg-error hover:bg-error/90 text-white font-bold text-xs px-4 py-2 rounded-lg transition shadow-md whitespace-nowrap"
+                  >
+                    {isHi ? 'संकट फ्लो देखें' : 'View Crisis Flow'}
+                  </button>
                 </div>
               )}
 
               {/* Bento Grid matching Stitch format */}
               <div className="flex flex-col gap-6">
                 
-                {/* AI Copilot Panel */}
-                <AICopilot language={language} />
+
 
                 {/* Facility Performance List matching code.html */}
                 <div className="w-full bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden shadow-sm flex flex-col h-[680px]">
@@ -848,65 +639,32 @@ export default function App() {
                     </div>
                   </div>
 
-                  {/* Immutable Audit Logs & Mock External Gateways */}
-                  <div className="border-t border-outline-variant pt-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between">
-                        <h4 className="font-headline-sm text-base text-primary flex items-center gap-2">
-                          <span className="material-symbols-outlined text-base">receipt_long</span>
-                          {isHi ? 'अपरिवर्तनीय ऑडिट लॉग' : 'Immutable Audit Logs'}
-                        </h4>
-                        <span className="text-[10px] bg-surface-container-high text-secondary px-2 py-0.5 rounded font-mono">Real-time</span>
-                      </div>
-                      <div className="space-y-2 max-h-[180px] overflow-y-auto pr-1">
-                        {logs.map(log => (
-                          <div key={log.id} className="p-2.5 bg-surface-container-low rounded-lg border border-outline-variant space-y-1 text-xs">
-                            <div className="flex items-center justify-between">
-                              <span className="text-[10px] font-mono text-secondary">{log.timestamp} - {log.facility}</span>
-                              <span className={`text-[10px] font-extrabold px-1.5 py-0.2 rounded ${
-                                log.type === 'ALERT' ? 'bg-error-container text-on-error-container' :
-                                log.type === 'TRANSFER' ? 'bg-primary-fixed text-on-primary-fixed-variant' :
-                                log.type === 'SYNC' ? 'bg-green-100 text-green-800' :
-                                log.type === 'MAINTENANCE' ? 'bg-blue-100 text-blue-800' :
-                                log.type === 'STAFF' ? 'bg-purple-100 text-purple-800' :
-                                'bg-secondary-container text-on-secondary-container'
-                              }`}>
-                                {log.type}
-                              </span>
-                            </div>
-                            <p className="text-on-surface text-[11px] font-mono leading-tight">
-                              {isHi ? log.messageHi : log.message}
-                            </p>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Interactive Gateway Mock Triggers */}
-                    <div className="space-y-3">
-                      <h4 className="font-headline-sm text-base text-primary flex items-center gap-2">
-                        <span className="material-symbols-outlined text-base">sensors</span>
-                        {isHi ? 'बाहरी गेटवे इनपुट सिमुलेशन' : 'Simulate Incoming External Gateway Feeds'}
+                  {/* System Administration & Feeds (Audit Logs & Gateway Simulator Drawers) */}
+                  <div className="border-t border-outline-variant pt-6 flex flex-wrap gap-4 items-center justify-between">
+                    <div>
+                      <h4 className="font-headline-sm text-sm text-primary flex items-center gap-2">
+                        <span className="material-symbols-outlined text-base font-bold">settings_ethernet</span>
+                        {isHi ? 'सिस्टम एडमिनिस्ट्रेटिव कंट्रोल' : 'System Administration & Feeds'}
                       </h4>
-                      <p className="text-xs text-on-surface-variant">
-                        {isHi ? 'बुनियादी मोबाइल एसएमएस या बायोमेट्रिक सिंक का परीक्षण करें:' : 'Trigger mock external telemetry inputs from rural health centers in real-time:'}
+                      <p className="text-[11px] text-on-surface-variant">
+                        {isHi ? 'ऑडिट लॉग की समीक्षा करें और बाहरी USSD/बायोमेट्रिक सिमुलेशन को सक्रिय करें।' : 'Review telemetry logs and trigger mock USSD / Biometric device simulation.'}
                       </p>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
-                        <button
-                          onClick={() => addLog('INFO', 'USSD Gateway Check-in: Pharmacist at PHC Delta logged daily consumption via basic mobile phone SMS.', 'USSD गेटवे चेक-इन: PHC Delta के फार्मासिस्ट ने साधारण मोबाइल एसएमएस के माध्यम से दैनिक खपत दर्ज की।', 'PHC Delta')}
-                          className="p-3 bg-surface-container-low hover:bg-surface-container border border-outline-variant rounded-xl text-left text-xs font-bold text-primary transition flex items-center justify-between shadow-sm"
-                        >
-                          <span>📱 Mock USSD SMS Check-in</span>
-                          <span className="material-symbols-outlined text-sm text-primary">arrow_forward</span>
-                        </button>
-                        <button
-                          onClick={() => addLog('INFO', 'Biometric API Feed: Nurse staff shift check-in successfully synchronized with central state LIS database.', 'बायोमेट्रिक API फीड: नर्स स्टाफ शिफ्ट चेक-इन सफलतापूर्वक केंद्रीय राज्य LIS डेटाबेस के साथ सिंक्रनाइज़ हुआ।', 'CHC Beta')}
-                          className="p-3 bg-surface-container-low hover:bg-surface-container border border-outline-variant rounded-xl text-left text-xs font-bold text-primary transition flex items-center justify-between shadow-sm"
-                        >
-                          <span>🔒 Mock Biometric API Feed</span>
-                          <span className="material-symbols-outlined text-sm text-primary">arrow_forward</span>
-                        </button>
-                      </div>
+                    </div>
+                    <div className="flex gap-3">
+                      <button
+                        onClick={() => setShowLogsDrawer(true)}
+                        className="px-4 py-2 bg-surface hover:bg-surface-container border border-outline-variant rounded-lg text-xs font-bold text-primary flex items-center gap-1.5 transition shadow-sm"
+                      >
+                        <span className="material-symbols-outlined text-sm">receipt_long</span>
+                        {isHi ? 'ऑडिट लॉग देखें' : 'View Audit Logs'}
+                      </button>
+                      <button
+                        onClick={() => setShowDevConsole(true)}
+                        className="px-4 py-2 bg-surface hover:bg-surface-container border border-outline-variant rounded-lg text-xs font-bold text-primary flex items-center gap-1.5 transition shadow-sm"
+                      >
+                        <span className="material-symbols-outlined text-sm">sensors</span>
+                        {isHi ? 'गेटवे सिम्युलेटर' : 'Gateway Simulator'}
+                      </button>
                     </div>
                   </div>
 
@@ -920,8 +678,6 @@ export default function App() {
           {/* TAB 2: INVENTORY MANAGEMENT & PHARMACIST PORTAL */}
           {activeTab === 'inventory' && (
             <div className="space-y-6 max-w-7xl mx-auto">
-              {/* AI Computer Vision Stock Scanner */}
-              <StockScanner language={language} />
 
               {/* Top Pharmacist Portal Quick Entry Box */}
 
@@ -941,20 +697,29 @@ export default function App() {
                     </div>
                   </div>
 
-                  {/* Facility Selector */}
-                  <div>
-                    <label className="text-[11px] font-bold text-secondary block mb-1 uppercase tracking-wider">
-                      {isHi ? 'कार्यरत स्वास्थ्य केंद्र चुनें:' : 'Select Operating Health Centre:'}
-                    </label>
-                    <select 
-                      value={selectedFacilityId}
-                      onChange={(e) => setSelectedFacilityId(e.target.value)}
-                      className="bg-surface border border-outline-variant rounded-xl px-4 py-2 text-xs text-primary font-bold focus:outline-none focus:border-primary transition shadow-sm"
+                  {/* Facility Selector & Scanner Trigger */}
+                  <div className="flex items-end gap-3">
+                    <div>
+                      <label className="text-[11px] font-bold text-secondary block mb-1 uppercase tracking-wider">
+                        {isHi ? 'कार्यरत स्वास्थ्य केंद्र चुनें:' : 'Select Operating Health Centre:'}
+                      </label>
+                      <select 
+                        value={selectedFacilityId}
+                        onChange={(e) => setSelectedFacilityId(e.target.value)}
+                        className="bg-surface border border-outline-variant rounded-xl px-4 py-2 text-xs text-primary font-bold focus:outline-none focus:border-primary transition shadow-sm"
+                      >
+                        {facilities.map(f => (
+                          <option key={f.id} value={f.id}>{isHi ? f.nameHi : f.name}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <button
+                      onClick={() => setShowScannerModal(true)}
+                      className="px-4 py-2 bg-primary hover:opacity-90 text-white font-bold text-xs rounded-xl shadow-sm transition flex items-center gap-1.5 h-[38px] cursor-pointer"
                     >
-                      {facilities.map(f => (
-                        <option key={f.id} value={f.id}>{isHi ? f.nameHi : f.name}</option>
-                      ))}
-                    </select>
+                      <span className="material-symbols-outlined text-sm">photo_camera</span>
+                      {isHi ? 'शेल्फ स्कैन करें (AI)' : 'AI Scan Shelf'}
+                    </button>
                   </div>
                 </div>
 
@@ -1160,85 +925,26 @@ export default function App() {
           {/* TAB 3: PATIENT FLOW & LIVE TRIAGE PORTAL */}
           {activeTab === 'patients' && (
             <div className="space-y-6 max-w-7xl mx-auto">
-              {/* Doctor Quick Entry Container */}
-              <div className="bg-surface-container-lowest border border-outline-variant rounded-2xl p-6 shadow-sm space-y-4">
-                <div className="flex flex-wrap items-center justify-between gap-4 border-b border-outline-variant pb-4">
-                  <div className="flex items-center space-x-3">
-                    <div className="p-3 bg-primary-container text-on-primary-container rounded-xl shadow-sm">
-                      <span className="material-symbols-outlined text-3xl">clinical_notes</span>
-                    </div>
-                    <div>
-                      <h2 className="text-lg font-extrabold text-primary tracking-tight">
-                        {isHi ? 'चिकित्सक मरीज फुटफॉल एवं ट्रिएज पोर्टल' : 'Doctor Patient Footfall & Live Triage Portal'}
-                      </h2>
-                      <p className="text-xs text-on-surface-variant">
-                        {isHi ? 'बाह्य रोगियों का त्वरित पंजीकरण करें और ट्रिएज कतार का लाइव प्रबंधन करें' : 'Register incoming outpatients and manage emergency triage queue in real-time'}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Facility Selector */}
-                  <div>
-                    <label className="text-[11px] font-bold text-secondary block mb-1 uppercase tracking-wider">
-                      {isHi ? 'कार्यरत स्वास्थ्य केंद्र चुनें:' : 'Select Operating Health Centre:'}
-                    </label>
-                    <select 
-                      value={selectedFacilityId}
-                      onChange={(e) => setSelectedFacilityId(e.target.value)}
-                      className="bg-surface border border-outline-variant rounded-xl px-4 py-2 text-xs text-primary font-bold focus:outline-none focus:border-primary transition shadow-sm"
-                    >
-                      {facilities.map(f => (
-                        <option key={f.id} value={f.id}>{isHi ? f.nameHi : f.name}</option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-
-                {/* Quick Logging Actions */}
-                <div className="py-2 space-y-4">
-                  <h3 className="text-xs font-bold text-secondary uppercase tracking-wider">
-                    {isHi ? 'त्वरित ट्रिएज पंजीकरण क्रियाएं:' : 'Quick Triage Registration Actions:'}
-                  </h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <button
-                      onClick={() => logPatientFootfall(selectedFacilityId, false)}
-                      className="p-5 bg-surface hover:bg-surface-container-low border border-outline-variant rounded-xl text-left shadow-sm active:scale-95 transition-all group"
-                    >
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm font-extrabold text-primary">Log General OPD Patient (Green Triage)</span>
-                        <span className="material-symbols-outlined text-xl text-primary group-hover:scale-110 transition-transform">group_add</span>
-                      </div>
-                      <p className="text-xs text-on-surface-variant">
-                        {isHi ? 'सामान्य बाह्य रोगी (OPD) के आगमन का पंजीकरण करें।' : 'Register incoming general outpatient walk-in queue check-in.'}
-                      </p>
-                    </button>
-
-                    <button
-                      onClick={() => logPatientFootfall(selectedFacilityId, true)}
-                      className="p-5 bg-error-container hover:opacity-90 border border-error-container rounded-xl text-left shadow-sm active:scale-95 transition-all group"
-                    >
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm font-extrabold text-on-error-container">Log Urgent Triage Patient (Red Triage)</span>
-                        <span className="material-symbols-outlined text-xl text-error group-hover:scale-110 transition-transform">emergency</span>
-                      </div>
-                      <p className="text-xs text-on-error-container">
-                        {isHi ? 'तत्काल ध्यान देने योग्य (Urgent Triage) मरीज का पंजीकरण करें।' : 'Register high-priority emergency walk-in requiring immediate doctor allocation.'}
-                      </p>
-                    </button>
-                  </div>
-                </div>
-              </div>
 
               {/* Master Patient Queue Overview Table */}
               <div className="bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden shadow-sm">
-                <div className="p-lg border-b border-outline-variant bg-surface-container-low flex items-center justify-between">
+                <div className="p-lg border-b border-outline-variant bg-surface-container-low flex flex-wrap items-center justify-between gap-4">
                   <div>
                     <h3 className="font-headline-sm text-headline-sm text-primary">Real-Time Facility Waiting Queues</h3>
                     <p className="text-body-sm text-on-surface-variant">Active patient distribution and estimated triage wait times</p>
                   </div>
-                  <span className="text-xs bg-primary-fixed text-on-primary-fixed-variant px-3 py-1 rounded-full font-bold">
-                    Live Telemetry
-                  </span>
+                  <div className="flex items-center gap-3">
+                    <span className="text-xs bg-primary-fixed text-on-primary-fixed-variant px-3 py-1 rounded-full font-bold">
+                      Live Telemetry
+                    </span>
+                    <button 
+                      onClick={() => setShowIntakeDrawer(true)}
+                      className="px-4 py-2 bg-primary hover:opacity-90 text-white font-bold text-xs rounded-xl shadow-sm transition flex items-center gap-1.5 cursor-pointer"
+                    >
+                      <span className="material-symbols-outlined text-sm">person_add</span>
+                      {isHi ? 'नया मरीज पंजीकृत करें' : 'Register New Patient'}
+                    </button>
+                  </div>
                 </div>
 
                 <div className="overflow-x-auto">
@@ -1596,6 +1302,13 @@ export default function App() {
                     </p>
                   </div>
                 </div>
+                <button
+                  onClick={() => setShowSimulatorModal(true)}
+                  className="px-4 py-2 bg-primary hover:opacity-90 text-white font-bold text-xs rounded-xl shadow-sm transition flex items-center gap-1.5 cursor-pointer"
+                >
+                  <span className="material-symbols-outlined text-sm">model_training</span>
+                  {isHi ? 'सिमुलेशन सैंडबॉक्स लॉन्च करें' : 'Launch Simulation Sandbox'}
+                </button>
               </div>
 
               {/* Predictive Modelling Grid */}
@@ -1626,17 +1339,38 @@ export default function App() {
               {/* Performance Analytics Leaderboard */}
               <PerformanceAnalytics language={language} />
 
-              {/* Nightly AI Workflow Timeline */}
-              <NightlyWorkflow language={language} />
-
-              {/* Resource Simulation Engine */}
-              <ResourceSimulator language={language} />
+              {/* Nightly AI Workflow Timeline (Collapsible Accordion) */}
+              <div className="bg-surface-container-lowest border border-outline-variant rounded-2xl p-6 shadow-sm">
+                <button 
+                  onClick={() => setShowNightlyTimeline(!showNightlyTimeline)}
+                  className="w-full flex items-center justify-between text-primary font-headline-sm text-base focus:outline-none"
+                >
+                  <div className="flex items-center space-x-2">
+                    <span className="material-symbols-outlined text-xl">sync_saved_locally</span>
+                    <h3>{isHi ? 'ऑफ़लाइन सिंक पाइपलाइन एवं नाइटली एआई वर्कफ़्लो' : 'Sync Pipeline & Nightly AI Workflow Status'}</h3>
+                  </div>
+                  <span className="material-symbols-outlined transition-transform duration-200" style={{ transform: showNightlyTimeline ? 'rotate(180deg)' : 'rotate(0deg)' }}>
+                    expand_more
+                  </span>
+                </button>
+                {showNightlyTimeline && (
+                  <div className="mt-4 pt-4 border-t border-outline-variant animate-fade-in">
+                    <NightlyWorkflow language={language} />
+                  </div>
+                )}
+              </div>
 
               {/* AI Explainability Panel */}
               <AIExplainability language={language} transferApproved={transferApproved} />
             </div>
           )}
 
+          {/* TAB 8: AI COPILOT */}
+          {activeTab === 'copilot' && (
+            <div className="space-y-6">
+              <AICopilot language={language} isSidebar={false} />
+            </div>
+          )}
 
         </main>
       </div>
@@ -1661,14 +1395,392 @@ export default function App() {
           {isHi ? 'एचएल7/एफएचआईआर मानक संगत • संपूर्ण डेटा एंड-टू-एंड एन्क्रिप्टेड है' : 'HL7/FHIR Standards Compliant • All Telemetry Data is End-to-End Encrypted'}
         </p>
       </footer>
-      <DemoStoryMode
-        language={language}
-        activeTab={activeTab}
-        onTabChange={setActiveTab}
-        onSimulateCrisis={simulateCrisis}
-        transferApproved={transferApproved}
-      />
+
+      {/* ── ALL OVERLAYS (Portal → renders at document.body to escape layout clipping) ── */}
+      {createPortal(
+        <>
+
+      {/* 1. Crisis Event Flow Drawer */}
+      {showCrisisDrawer && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex justify-end" onClick={() => setShowCrisisDrawer(false)}>
+          <div className="w-full max-w-2xl bg-surface h-full shadow-2xl flex flex-col p-6 border-l border-outline-variant overflow-y-auto" onClick={e => e.stopPropagation()}>
+            <div className="flex justify-between items-center border-b border-outline-variant pb-md mb-lg">
+              <div className="flex items-center space-x-3">
+                <span className="material-symbols-outlined text-error animate-pulse text-2xl">warning</span>
+                <h2 className="font-headline-md text-lg font-extrabold text-primary">
+                  {isHi ? 'क्राइसिस आर्केस्ट्रेशन फ्लो' : 'AI Crisis Orchestration Flow'}
+                </h2>
+              </div>
+              <button 
+                onClick={() => setShowCrisisDrawer(false)}
+                className="text-on-surface-variant hover:bg-surface-container p-2 rounded-full transition flex items-center justify-center cursor-pointer"
+              >
+                <span className="material-symbols-outlined">close</span>
+              </button>
+            </div>
+            
+            <div className="space-y-6">
+              <div className="flex items-center space-x-3 bg-error-container/20 p-4 rounded-xl border border-error/25">
+                <div className="bg-white p-2.5 rounded-lg text-error border border-error-container shadow-sm shrink-0">
+                  <span className="material-symbols-outlined text-2xl animate-pulse">warning</span>
+                </div>
+                <div>
+                  <h3 className="text-sm font-extrabold text-on-error-container">
+                    {isHi ? 'आपातकालीन घटना: एमोक्सिसिलिन स्टॉक-आउट चेतावनी' : 'Crisis Event: Amoxicillin Early Stock-out Warning'}
+                  </h3>
+                  <p className="text-xs text-on-surface-variant leading-relaxed">
+                    {isHi ? 'अचानक श्वसन संक्रमण मामलों के कारण PHC Alpha में स्टॉक भारी गिरावट पर है।' : 'Triggered by a sudden local respiratory infection surge at PHC Alpha.'}
+                  </p>
+                </div>
+              </div>
+
+              {/* Stage 1: Crisis */}
+              <div className="bg-surface-container-low border border-outline-variant rounded-xl p-5 space-y-3 relative shadow-sm">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-error uppercase tracking-wider">Step 1: The Crisis</span>
+                  <span className="px-2 py-0.5 bg-error-container text-on-error-container text-[10px] font-bold rounded-full">Critical Status</span>
+                </div>
+                <h4 className="text-sm font-bold text-primary">PHC Alpha (Mundawar)</h4>
+                <div className="p-3 bg-white rounded-lg border border-outline-variant space-y-2">
+                  <div className="flex justify-between text-xs">
+                    <span className="text-on-surface-variant">Amoxicillin 500mg:</span>
+                    <span className="font-extrabold text-error">12 Boxes Remaining</span>
+                  </div>
+                  <div className="flex justify-between text-xs">
+                    <span className="text-on-surface-variant">Minimum Threshold:</span>
+                    <span className="font-bold text-secondary">50 Boxes</span>
+                  </div>
+                  <div className="w-full bg-surface-container h-1.5 rounded-full overflow-hidden">
+                    <div className="bg-error h-full w-[24%]"></div>
+                  </div>
+                </div>
+                <p className="text-xs text-on-surface-variant">
+                  <strong>Gemini Forecast:</strong> Total stock depletion in <strong>5 days</strong> without administrative intervention.
+                </p>
+              </div>
+
+              {/* Stage 2: AI Recommendation & Visual Route */}
+              <div className="bg-surface-container-low border border-outline-variant rounded-xl p-5 space-y-3 relative flex flex-col justify-between shadow-sm">
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-primary uppercase tracking-wider">Step 2: AI Smart Redistribution</span>
+                    <span className="px-2 py-0.5 bg-primary-fixed text-on-primary-fixed-variant text-[10px] font-bold rounded-full">Gemini 1.5 Pro</span>
+                  </div>
+                  <h4 className="text-sm font-bold text-primary">CHC Beta (Tijara) Surplus</h4>
+                  <p className="text-xs text-on-surface-variant">
+                    CHC Beta possesses <strong>220 boxes</strong> of Amoxicillin (140 above buffer). AI recommends transferring 50 boxes to balance district health levels.
+                  </p>
+                </div>
+
+                <div className="p-3 bg-white rounded-lg border border-outline-variant flex items-center justify-between">
+                  <div className="text-center">
+                    <span className="text-[10px] text-secondary font-bold block">DONOR</span>
+                    <span className="text-xs font-bold text-primary">CHC Beta</span>
+                  </div>
+                  <div className="flex-1 px-4 flex flex-col items-center">
+                    <span className="text-[10px] font-extrabold text-primary mb-1">50 BOXES TRANSFER</span>
+                    <div className="w-full flex items-center">
+                      <div className="h-1 flex-1 bg-outline-variant relative overflow-hidden rounded-full">
+                        <div className="absolute top-0 left-0 h-full w-full bg-primary animate-[pulse_1.5s_infinite]"></div>
+                      </div>
+                      <span className="material-symbols-outlined text-base text-primary ml-1">arrow_forward</span>
+                    </div>
+                    <span className="text-[10px] text-secondary mt-1 flex items-center gap-1">
+                      <span className="material-symbols-outlined text-[12px]">schedule</span> Est. Time: 25 Mins
+                    </span>
+                  </div>
+                  <div className="text-center">
+                    <span className="text-[10px] text-secondary font-bold block">DEFICIT</span>
+                    <span className="text-xs font-bold text-error">PHC Alpha</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Stage 3 & 4: Approval & Impact */}
+              <div className="bg-surface-container-low border border-outline-variant rounded-xl p-5 space-y-4 relative flex flex-col justify-between shadow-sm">
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-xs font-bold text-green-700 uppercase tracking-wider">Step 3 & 4: Approval & Impact</span>
+                    <span className="px-2 py-0.5 bg-green-100 text-green-800 text-[10px] font-bold rounded-full">One-Click SLA</span>
+                  </div>
+                  <h4 className="text-sm font-bold text-primary">
+                    {transferApproved ? 'Redistribution Executed Successfully!' : 'Administrative Authorization Pending'}
+                  </h4>
+                  <p className="text-xs text-on-surface-variant mt-1">
+                    {transferApproved 
+                    ? 'Inventory ledgers instantly balanced across facilities. Automated transport manifest dispatched.' 
+                    : 'Review AI recommendation and execute digital sign-off to instantly avert the forecast stock-out.'}
+                  </p>
+                </div>
+
+                {transferApproved ? (
+                  <div className="p-4 bg-green-50 border border-green-300 rounded-xl flex flex-col gap-2 text-green-900 animate-fade-in">
+                    <div className="flex items-center space-x-3">
+                      <span className="material-symbols-outlined text-3xl text-green-700 flex-shrink-0">check_circle</span>
+                      <div className="text-xs space-y-1">
+                        <span className="font-extrabold block text-green-800">IMPACT ACHIEVED</span>
+                        <span>PHC Alpha stock restored to <strong>62 Boxes</strong>. Crisis successfully averted!</span>
+                      </div>
+                    </div>
+                    <button
+                      onClick={exportRedistributionReportPDF}
+                      className="mt-2 w-full py-2 bg-green-700 hover:bg-green-800 text-white font-bold text-xs rounded-lg shadow flex items-center justify-center gap-2 transition-all"
+                    >
+                      <span className="material-symbols-outlined text-sm">download</span>
+                      {isHi ? 'रिपोर्ट पीडीएफ डाउनलोड करें' : 'Download Report (PDF)'}
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={approveTransfer}
+                    className="w-full py-3 bg-primary hover:opacity-90 text-white font-extrabold text-sm rounded-xl shadow-md active:scale-95 transition-all flex items-center justify-center gap-2 group cursor-pointer"
+                  >
+                    <span className="material-symbols-outlined text-xl text-white group-hover:scale-110 transition-transform">check</span>
+                    {isHi ? 'पुनर्वितरण तुरंत अधिकृत करें' : 'Authorize 50 Boxes Transfer'}
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 2. Gateway Simulation Modal */}
+      {showDevConsole && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-center justify-center px-4 py-8" onClick={() => setShowDevConsole(false)}>
+          <div className="w-full max-w-lg bg-surface rounded-2xl shadow-2xl flex flex-col p-6 border border-outline-variant" onClick={e => e.stopPropagation()}>
+            <div className="flex justify-between items-center border-b border-outline-variant pb-md mb-md">
+              <div className="flex items-center space-x-3">
+                <span className="material-symbols-outlined text-primary text-2xl">sensors</span>
+                <h2 className="text-base font-extrabold text-primary">
+                  {isHi ? 'बाहरी गेटवे इनपुट सिमुलेशन' : 'Simulate Incoming External Gateway Feeds'}
+                </h2>
+              </div>
+              <button 
+                onClick={() => setShowDevConsole(false)}
+                className="text-on-surface-variant hover:bg-surface-container p-2 rounded-full transition flex items-center justify-center cursor-pointer"
+              >
+                <span className="material-symbols-outlined">close</span>
+              </button>
+            </div>
+            
+            <div className="space-y-4">
+              <p className="text-xs text-on-surface-variant leading-relaxed">
+                {isHi ? 'बुनियादी ग्रामीण केंद्रों से रीयल-टाइम USSD SMS या बायोमेट्रिक सिंक्रोनाइज़ेशन इनपुट ट्रिगर करें:' : 'Trigger mock USSD/Biometric telemetry inputs to test offline queuing and synchronization logic:'}
+              </p>
+              <div className="flex flex-col gap-3 pt-2">
+                <button
+                  onClick={() => {
+                    addLog('INFO', 'USSD Gateway Check-in: Pharmacist at PHC Delta logged daily consumption via basic mobile phone SMS.', 'USSD गेटवे चेक-इन: PHC Delta के फार्मासिस्ट ने साधारण मोबाइल एसएमएस के माध्यम से दैनिक खपत दर्ज की।', 'PHC Delta');
+                    setShowDevConsole(false);
+                  }}
+                  className="p-4 bg-surface hover:bg-surface-container border border-outline-variant rounded-xl text-left text-xs font-bold text-primary transition flex items-center justify-between shadow-sm cursor-pointer"
+                >
+                  <div className="flex items-center space-x-2">
+                    <span className="text-xl">📱</span>
+                    <span>Mock USSD SMS Check-in</span>
+                  </div>
+                  <span className="material-symbols-outlined text-sm text-primary">arrow_forward</span>
+                </button>
+                <button
+                  onClick={() => {
+                    addLog('INFO', 'Biometric API Feed: Nurse staff shift check-in successfully synchronized with central state LIS database.', 'बायोमेट्रिक API फीड: नर्स स्टाफ शिफ्ट चेक-इन सफलतापूर्वक केंद्रीय राज्य LIS डेटाबेस के साथ सिंक्रनाइज़ हुआ।', 'CHC Beta');
+                    setShowDevConsole(false);
+                  }}
+                  className="p-4 bg-surface hover:bg-surface-container border border-outline-variant rounded-xl text-left text-xs font-bold text-primary transition flex items-center justify-between shadow-sm cursor-pointer"
+                >
+                  <div className="flex items-center space-x-2">
+                    <span className="text-xl">🔒</span>
+                    <span>Mock Biometric API Feed</span>
+                  </div>
+                  <span className="material-symbols-outlined text-sm text-primary">arrow_forward</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 3. System Audit Logs Drawer */}
+      {showLogsDrawer && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex justify-end" onClick={() => setShowLogsDrawer(false)}>
+          <div className="w-full max-w-lg bg-surface h-full shadow-2xl flex flex-col p-6 border-l border-outline-variant overflow-y-auto" onClick={e => e.stopPropagation()}>
+            <div className="flex justify-between items-center border-b border-outline-variant pb-md mb-lg shrink-0">
+              <div className="flex items-center space-x-3">
+                <span className="material-symbols-outlined text-primary text-2xl">receipt_long</span>
+                <h2 className="font-headline-md text-lg font-extrabold text-primary">
+                  {isHi ? 'अपरिवर्तनीय ऑडिट लॉग' : 'Immutable Audit Logs'}
+                </h2>
+              </div>
+              <button 
+                onClick={() => setShowLogsDrawer(false)}
+                className="text-on-surface-variant hover:bg-surface-container p-2 rounded-full transition flex items-center justify-center cursor-pointer"
+              >
+                <span className="material-symbols-outlined">close</span>
+              </button>
+            </div>
+            
+            <div className="flex-1 overflow-y-auto pr-1 space-y-2">
+              {logs.map(log => (
+                <div key={log.id} className="p-3 bg-surface-container-low rounded-lg border border-outline-variant space-y-1 text-xs shadow-sm">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-mono text-secondary">{log.timestamp} - {log.facility}</span>
+                    <span className={`text-[9px] font-extrabold px-1.5 py-0.2 rounded tracking-wide uppercase ${
+                      log.type === 'ALERT' ? 'bg-error-container text-on-error-container' :
+                      log.type === 'TRANSFER' ? 'bg-primary-fixed text-on-primary-fixed-variant' :
+                      log.type === 'SYNC' ? 'bg-green-100 text-green-800' :
+                      log.type === 'MAINTENANCE' ? 'bg-blue-100 text-blue-800' :
+                      log.type === 'STAFF' ? 'bg-purple-100 text-purple-800' :
+                      'bg-secondary-container text-on-secondary-container'
+                    }`}>
+                      {log.type}
+                    </span>
+                  </div>
+                  <p className="text-on-surface text-[11px] font-mono leading-tight">
+                    {isHi ? log.messageHi : log.message}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 4. AI Stock Scanner Modal */}
+      {showScannerModal && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-center justify-center px-4 py-8" onClick={() => setShowScannerModal(false)}>
+          <div className="w-full max-w-4xl bg-surface rounded-2xl shadow-2xl flex flex-col p-6 border border-outline-variant max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+            <div className="flex justify-between items-center border-b border-outline-variant pb-md mb-md shrink-0">
+              <div className="flex items-center space-x-3">
+                <span className="material-symbols-outlined text-primary text-2xl">photo_camera</span>
+                <h2 className="text-base font-extrabold text-primary">
+                  {isHi ? 'शेल्फ कंप्यूटर विजन स्कैनर सैंडबॉक्स' : 'AI Computer Vision Stock Scanner Sandbox'}
+                </h2>
+              </div>
+              <button 
+                onClick={() => setShowScannerModal(false)}
+                className="text-on-surface-variant hover:bg-surface-container p-2 rounded-full transition flex items-center justify-center cursor-pointer"
+              >
+                <span className="material-symbols-outlined">close</span>
+              </button>
+            </div>
+            
+            <div className="flex-1 min-h-0">
+              <StockScanner language={language} />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 5. Patient Registration Form Drawer */}
+      {showIntakeDrawer && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex justify-end" onClick={() => setShowIntakeDrawer(false)}>
+          <div className="w-full max-w-md bg-surface h-full shadow-2xl flex flex-col p-6 border-l border-outline-variant overflow-y-auto" onClick={e => e.stopPropagation()}>
+            <div className="flex justify-between items-center border-b border-outline-variant pb-md mb-lg">
+              <div className="flex items-center space-x-3">
+                <span className="material-symbols-outlined text-primary text-2xl">person_add</span>
+                <h2 className="font-headline-md text-lg font-extrabold text-primary">
+                  {isHi ? 'मरीज पंजीकरण एवं लाइव ट्रिएज' : 'Patient Intake & Triage Registration'}
+                </h2>
+              </div>
+              <button 
+                onClick={() => setShowIntakeDrawer(false)}
+                className="text-on-surface-variant hover:bg-surface-container p-2 rounded-full transition flex items-center justify-center cursor-pointer"
+              >
+                <span className="material-symbols-outlined">close</span>
+              </button>
+            </div>
+            
+            <div className="space-y-6">
+              <div className="space-y-3">
+                <label className="text-[11px] font-bold text-secondary block uppercase tracking-wider">
+                  {isHi ? 'ऑपरेटिंग स्वास्थ्य केंद्र चुनें:' : 'Select Operating Health Centre:'}
+                </label>
+                <select 
+                  value={selectedFacilityId}
+                  onChange={(e) => setSelectedFacilityId(e.target.value)}
+                  className="w-full bg-surface border border-outline-variant rounded-xl px-4 py-2.5 text-xs text-primary font-bold focus:outline-none focus:border-primary transition shadow-sm"
+                >
+                  {facilities.map(f => (
+                    <option key={f.id} value={f.id}>{isHi ? f.nameHi : f.name}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="py-2 space-y-4">
+                <h3 className="text-xs font-bold text-secondary uppercase tracking-wider">
+                  {isHi ? 'नया चेक-इन जोड़ें:' : 'Add New Check-in Case:'}
+                </h3>
+                <div className="flex flex-col gap-4">
+                  <button
+                    onClick={() => {
+                      logPatientFootfall(selectedFacilityId, false);
+                      setShowIntakeDrawer(false);
+                    }}
+                    className="p-5 bg-surface hover:bg-surface-container-low border border-outline-variant rounded-xl text-left shadow-sm active:scale-95 transition-all group cursor-pointer"
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm font-extrabold text-primary">Log General OPD (Green Triage)</span>
+                      <span className="material-symbols-outlined text-xl text-primary group-hover:scale-110 transition-transform">group_add</span>
+                    </div>
+                    <p className="text-xs text-on-surface-variant">
+                      {isHi ? 'सामान्य बाह्य रोगी (OPD) के आगमन का पंजीकरण करें।' : 'Register walk-in outpatient queue check-in (Routine/Non-urgent status).'}
+                    </p>
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      logPatientFootfall(selectedFacilityId, true);
+                      setShowIntakeDrawer(false);
+                    }}
+                    className="p-5 bg-error-container hover:opacity-95 border border-error-container rounded-xl text-left shadow-sm active:scale-95 transition-all group cursor-pointer"
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm font-extrabold text-on-error-container">Log Urgent Triage (Red Triage)</span>
+                      <span className="material-symbols-outlined text-xl text-error group-hover:scale-110 transition-transform">emergency</span>
+                    </div>
+                    <p className="text-xs text-on-error-container text-opacity-80">
+                      {isHi ? 'तत्काल ध्यान देने योग्य (Urgent Triage) मरीज का पंजीकरण करें।' : 'Register high-priority emergency visit requiring instant physician allocation.'}
+                    </p>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 6. Outbreak Simulation Sandbox Modal */}
+      {showSimulatorModal && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-center justify-center px-4 py-4" onClick={() => setShowSimulatorModal(false)}>
+          <div className="w-full max-w-5xl bg-surface rounded-2xl shadow-2xl flex flex-col p-6 border border-outline-variant max-h-[95vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+            <div className="flex justify-between items-center border-b border-outline-variant pb-md mb-md shrink-0">
+              <div className="flex items-center space-x-3">
+                <span className="material-symbols-outlined text-primary text-2xl">model_training</span>
+                <h2 className="text-base font-extrabold text-primary">
+                  {isHi ? 'संसाधन महामारी विज्ञान सिमुलेशन सैंडबॉक्स' : 'Resource Epidemic Simulation Sandbox'}
+                </h2>
+              </div>
+              <button 
+                onClick={() => setShowSimulatorModal(false)}
+                className="text-on-surface-variant hover:bg-surface-container p-2 rounded-full transition flex items-center justify-center cursor-pointer"
+              >
+                <span className="material-symbols-outlined">close</span>
+              </button>
+            </div>
+            
+            <div className="flex-1 min-h-0">
+              <ResourceSimulator language={language} />
+            </div>
+          </div>
+        </div>
+      )}
+
       <VoiceReporter language={language} />
+
+        </>,
+        document.body
+      )}
     </div>
   );
 }

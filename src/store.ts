@@ -91,7 +91,7 @@ export interface StaffMember {
 interface HealthStore {
   role: 'Admin' | 'Pharmacist' | 'Doctor';
   language: 'en' | 'hi' | 'reg';
-  activeTab: 'dashboard' | 'inventory' | 'patients' | 'beds' | 'staff' | 'tests' | 'analytics';
+  activeTab: 'dashboard' | 'inventory' | 'patients' | 'beds' | 'staff' | 'tests' | 'analytics' | 'copilot';
   offlineMode: boolean;
   offlineQueue: OfflineEvent[];
   syncNotification: string | null;
@@ -104,7 +104,7 @@ interface HealthStore {
   
   setRole: (role: 'Admin' | 'Pharmacist' | 'Doctor') => void;
   setLanguage: (language: 'en' | 'hi' | 'reg') => void;
-  setActiveTab: (tab: 'dashboard' | 'inventory' | 'patients' | 'beds' | 'staff' | 'tests' | 'analytics') => void;
+  setActiveTab: (tab: 'dashboard' | 'inventory' | 'patients' | 'beds' | 'staff' | 'tests' | 'analytics' | 'copilot') => void;
   toggleOfflineMode: () => void;
   clearSyncNotification: () => void;
   logDailyConsumption: (facilityId: string, itemId: string, qty: number) => void;

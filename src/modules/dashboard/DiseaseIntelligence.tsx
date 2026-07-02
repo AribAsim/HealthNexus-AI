@@ -125,47 +125,7 @@ export default function DiseaseIntelligence({ language }: Props) {
         ))}
       </div>
 
-      {/* Recommended Actions Banner */}
-      <div className="bg-primary-container text-on-primary-container p-6 rounded-xl flex flex-col md:flex-row gap-6 items-center relative overflow-hidden mt-6 shadow-sm">
-        <div className="absolute right-0 top-0 opacity-10 scale-150 rotate-12 pointer-events-none">
-          <span className="material-symbols-outlined text-[200px]">health_and_safety</span>
-        </div>
-        
-        <div className="shrink-0 z-10">
-          <div className="flex items-center gap-2 mb-2">
-            <span className="material-symbols-outlined text-primary">lightbulb</span>
-            <h2 className="text-[20px] leading-[28px] font-semibold text-primary">
-              {isHi ? 'अनुशंसित निवारक कार्रवाई' : 'Recommended Preventive Actions'}
-            </h2>
-          </div>
-          <p className="text-[14px] leading-[20px] opacity-90 max-w-sm text-on-surface">
-            {isHi ? 'प्राथमिकता वाले हस्तक्षेप' : 'Strategic interventions prioritized based on multi-factor outbreak modeling and regional supply capacity.'}
-          </p>
-        </div>
-        
-        <div className="flex-1 w-full z-10">
-          <ul className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <li className="flex items-center gap-4 bg-white/50 p-4 rounded-lg border border-white/60 shadow-sm">
-              <span className="w-8 h-8 rounded-full bg-primary/20 text-primary flex items-center justify-center shrink-0 font-bold">1</span>
-              <span className="text-[14px] leading-[20px] font-medium text-on-surface">
-                {isHi ? 'थानागाज़ी ब्लॉक में वेक्टर नियंत्रण' : 'Deploy vector control in Thanagazi Block'}
-              </span>
-            </li>
-            <li className="flex items-center gap-4 bg-white/50 p-4 rounded-lg border border-white/60 shadow-sm">
-              <span className="w-8 h-8 rounded-full bg-primary/20 text-primary flex items-center justify-center shrink-0 font-bold">2</span>
-              <span className="text-[14px] leading-[20px] font-medium text-on-surface">
-                {isHi ? 'PHC स्तर पर ORS स्टॉक बढ़ाएं' : 'Increase ORS stock at PHC level'}
-              </span>
-            </li>
-            <li className="flex items-center gap-4 bg-white/50 p-4 rounded-lg border border-white/60 shadow-sm">
-              <span className="w-8 h-8 rounded-full bg-primary/20 text-primary flex items-center justify-center shrink-0 font-bold">3</span>
-              <span className="text-[14px] leading-[20px] font-medium text-on-surface">
-                {isHi ? 'उच्च जोखिम वाले क्षेत्रों में अलर्ट' : 'Alert nursing staff in high-risk zones'}
-              </span>
-            </li>
-          </ul>
-        </div>
-      </div>
+
     </section>
   );
 }

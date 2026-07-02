@@ -2,9 +2,10 @@ import { useState, useRef, useEffect } from 'react';
 
 interface Props {
   language: string;
+  isSidebar?: boolean;
 }
 
-export default function AICopilot({ language }: Props) {
+export default function AICopilot({ language, isSidebar = false }: Props) {
   const isHi = language === 'hi';
   const [inputText, setInputText] = useState('');
   const [messages, setMessages] = useState([
@@ -47,7 +48,7 @@ export default function AICopilot({ language }: Props) {
           text: isHi 
             ? 'उत्तरी-पश्चिमी ब्लॉक में 8 सुविधाओं के रीयल-टाइम डेटा का विश्लेषण किया जा रहा है। मैंने **2 सुविधाओं** की पहचान की है जो स्टॉक की कमी और कर्मचारियों की अनुपस्थिति के कारण सुरक्षा सीमा को पार कर रही हैं।'
             : "Analyzing real-time data for 8 facilities in the North-Western block. I've identified **2 facilities** currently exceeding the safety threshold due to stock depletion and staff absenteeism.",
-          isTable: true
+          isTable: !isSidebar
         }]);
       } else {
         setMessages(prev => [...prev, {
@@ -66,95 +67,101 @@ export default function AICopilot({ language }: Props) {
   }, [messages, isTyping]);
 
   return (
-    <div className="w-full h-[600px] border border-outline-variant rounded-xl overflow-hidden flex flex-col md:flex-row bg-surface-bright shadow-sm">
+    <div className={`w-full ${isSidebar ? 'h-[360px]' : 'h-[600px]'} border border-outline-variant rounded-xl overflow-hidden flex flex-col ${isSidebar ? '' : 'md:flex-row'} bg-surface-bright shadow-sm`}>
       
       {/* Left Panel: Quick Prompts (35%) */}
-      <section className="w-full md:w-[35%] bg-surface-container-low border-r border-outline-variant p-6 overflow-y-auto flex flex-col">
-        <div className="mb-6">
-          <h2 className="text-[20px] leading-[28px] font-semibold text-primary mb-2">AI Copilot</h2>
-          <p className="text-[13px] leading-[18px] text-on-surface-variant">
-            {isHi ? 'सक्रिय जिला प्रबंधन के लिए रीयल-टाइम स्वास्थ्य बुद्धिमत्ता।' : 'Real-time health intelligence for proactive district management.'}
-          </p>
-        </div>
-        
-        <div className="flex-1">
-          <h3 className="text-[12px] leading-[16px] tracking-[0.05em] font-semibold text-on-surface opacity-60 mb-4 uppercase">
-            {isHi ? 'त्वरित संकेत' : 'Quick Prompts'}
-          </h3>
-          <div className="grid grid-cols-1 gap-2">
-            {quickPrompts.map((prompt, idx) => (
-              <button 
-                key={idx}
-                onClick={() => handleSend(prompt.text)}
-                className="text-left p-4 bg-white border border-outline-variant hover:border-primary hover:bg-primary/5 rounded-lg transition-all group flex items-start gap-3 active:scale-[0.98]"
-              >
-                <span className={`material-symbols-outlined ${prompt.error ? 'text-error' : 'text-primary-container'}`}>
-                  {prompt.icon}
-                </span>
-                <span className="text-[14px] leading-[20px] text-on-surface group-hover:text-primary">
-                  {prompt.text}
-                </span>
-              </button>
-            ))}
+      {!isSidebar && (
+        <section className="w-full md:w-[35%] bg-surface-container-low border-r border-outline-variant p-6 overflow-y-auto flex flex-col">
+          <div className="mb-6">
+            <h2 className="text-[20px] leading-[28px] font-semibold text-primary mb-2">AI Copilot</h2>
+            <p className="text-[13px] leading-[18px] text-on-surface-variant">
+              {isHi ? 'सक्रिय जिला प्रबंधन के लिए रीयल-टाइम स्वास्थ्य बुद्धिमत्ता।' : 'Real-time health intelligence for proactive district management.'}
+            </p>
           </div>
-        </div>
-        
-        <div className="mt-6 p-4 bg-primary-container/5 rounded-xl border border-primary-container/20">
-          <div className="flex items-center gap-2 mb-1">
-            <span className="material-symbols-outlined text-primary-container text-[18px]">info</span>
-            <span className="text-[12px] leading-[16px] tracking-[0.05em] font-semibold text-primary-container">
-              {isHi ? 'सिस्टम स्थिति' : 'System Status'}
-            </span>
+          
+          <div className="flex-1">
+            <h3 className="text-[12px] leading-[16px] tracking-[0.05em] font-semibold text-on-surface opacity-60 mb-4 uppercase">
+              {isHi ? 'त्वरित संकेत' : 'Quick Prompts'}
+            </h3>
+            <div className="grid grid-cols-1 gap-2">
+              {quickPrompts.map((prompt, idx) => (
+                <button 
+                  key={idx}
+                  onClick={() => handleSend(prompt.text)}
+                  className="text-left p-4 bg-white border border-outline-variant hover:border-primary hover:bg-primary/5 rounded-lg transition-all group flex items-start gap-3 active:scale-[0.98]"
+                >
+                  <span className={`material-symbols-outlined ${prompt.error ? 'text-error' : 'text-primary-container'}`}>
+                    {prompt.icon}
+                  </span>
+                  <span className="text-[14px] leading-[20px] text-on-surface group-hover:text-primary">
+                    {prompt.text}
+                  </span>
+                </button>
+              ))}
+            </div>
           </div>
-          <p className="text-[13px] leading-[18px] text-on-surface-variant">
-            {isHi ? 'अंतिम डेटा सिंक: ' : 'Last data sync: '}<span className="font-mono">2 mins ago</span>. {isHi ? '42 सुविधाओं पर आधारित विश्लेषण।' : 'Analysis based on 42 connected facilities.'}
-          </p>
-        </div>
-      </section>
+          
+          <div className="mt-6 p-4 bg-primary-container/5 rounded-xl border border-primary-container/20">
+            <div className="flex items-center gap-2 mb-1">
+              <span className="material-symbols-outlined text-primary-container text-[18px]">info</span>
+              <span className="text-[12px] leading-[16px] tracking-[0.05em] font-semibold text-primary-container">
+                {isHi ? 'सिस्टम स्थिति' : 'System Status'}
+              </span>
+            </div>
+            <p className="text-[13px] leading-[18px] text-on-surface-variant">
+              {isHi ? 'अंतिम डेटा सिंक: ' : 'Last data sync: '}<span className="font-mono">2 mins ago</span>. {isHi ? '42 सुविधाओं पर आधारित विश्लेषण।' : 'Analysis based on 42 connected facilities.'}
+            </p>
+          </div>
+        </section>
+      )}
 
       {/* Right Panel: Chat Conversation (65%) */}
-      <section className="flex-1 flex flex-col h-full bg-surface-bright relative">
+      <section className="flex-1 flex flex-col h-full bg-surface-bright relative min-h-0">
         {/* Chat Header */}
-        <header className="px-6 py-4 border-b border-outline-variant bg-white/80 backdrop-blur-md flex justify-between items-center shrink-0 z-10">
+        <header className={`${isSidebar ? 'px-3 py-2' : 'px-6 py-4'} border-b border-outline-variant bg-white/80 backdrop-blur-md flex justify-between items-center shrink-0 z-10`}>
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-white">
-              <span className="material-symbols-outlined text-[20px]">smart_toy</span>
+            <div className={`${isSidebar ? 'w-6 h-6' : 'w-8 h-8'} bg-primary rounded-lg flex items-center justify-center text-white shrink-0`}>
+              <span className={`material-symbols-outlined ${isSidebar ? 'text-[16px]' : 'text-[20px]'}`}>smart_toy</span>
             </div>
             <div>
-              <h1 className="text-[16px] leading-[24px] font-semibold text-on-surface">
-                {isHi ? 'हेल्थनेक्सस एआई कोपायलट' : 'HealthNexus AI Copilot'}
+              <h1 className={`${isSidebar ? 'text-[13px] leading-tight' : 'text-[16px] leading-[24px]'} font-semibold text-on-surface`}>
+                {isSidebar ? (isHi ? 'एआई कोपायलट' : 'AI Copilot') : (isHi ? 'हेल्थनेक्सस एआई कोपायलट' : 'HealthNexus AI Copilot')}
               </h1>
-              <div className="flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-                <p className="text-[12px] leading-[16px] tracking-[0.05em] font-semibold text-on-surface-variant opacity-60">
-                  {isHi ? 'सिस्टम ऑनलाइन' : 'System Online'}
-                </p>
+              {!isSidebar && (
+                <div className="flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                  <p className="text-[12px] leading-[16px] tracking-[0.05em] font-semibold text-on-surface-variant opacity-60">
+                    {isHi ? 'सिस्टम ऑनलाइन' : 'System Online'}
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+          {!isSidebar && (
+            <div className="flex items-center gap-2 bg-surface-container-high px-3 py-1.5 rounded-full">
+              <span className="text-[12px] leading-[16px] tracking-[0.05em] font-semibold text-on-secondary-fixed-variant">
+                Powered by Gemini
+              </span>
+              <div className="w-5 h-5 bg-gradient-to-tr from-blue-600 to-cyan-400 rounded-full flex items-center justify-center shadow-sm">
+                <span className="material-symbols-outlined text-[12px] text-white" style={{ fontVariationSettings: "'FILL' 1" }}>auto_awesome</span>
               </div>
             </div>
-          </div>
-          <div className="flex items-center gap-2 bg-surface-container-high px-3 py-1.5 rounded-full">
-            <span className="text-[12px] leading-[16px] tracking-[0.05em] font-semibold text-on-secondary-fixed-variant">
-              Powered by Gemini
-            </span>
-            <div className="w-5 h-5 bg-gradient-to-tr from-blue-600 to-cyan-400 rounded-full flex items-center justify-center shadow-sm">
-              <span className="material-symbols-outlined text-[12px] text-white" style={{ fontVariationSettings: "'FILL' 1" }}>auto_awesome</span>
-            </div>
-          </div>
+          )}
         </header>
 
         {/* Chat Canvas */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-6">
+        <div className={`flex-1 overflow-y-auto ${isSidebar ? 'p-3 space-y-3' : 'p-6 space-y-6'} min-h-0`}>
           {messages.map((msg, idx) => (
-            <div key={idx} className={`flex gap-4 max-w-[85%] ${msg.type === 'user' ? 'ml-auto flex-row-reverse' : ''}`}>
-              <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white shrink-0 ${msg.type === 'user' ? 'bg-secondary' : 'bg-primary'}`}>
-                <span className="material-symbols-outlined text-[20px]">{msg.type === 'user' ? 'person' : 'smart_toy'}</span>
+            <div key={idx} className={`flex gap-3 max-w-[90%] ${msg.type === 'user' ? 'ml-auto flex-row-reverse' : ''}`}>
+              <div className={`w-6 h-6 rounded-full flex items-center justify-center text-white shrink-0 ${msg.type === 'user' ? 'bg-secondary' : 'bg-primary'}`}>
+                <span className="material-symbols-outlined text-[14px]">{msg.type === 'user' ? 'person' : 'smart_toy'}</span>
               </div>
-              <div className={`space-y-4 flex-1 ${msg.type === 'user' ? '' : ''}`}>
-                <div className={`p-4 shadow-sm ${msg.type === 'user' ? 'bg-primary text-white rounded-2xl rounded-tr-none' : 'bg-white border border-outline-variant rounded-2xl rounded-tl-none'}`}>
-                  <p className={`text-[14px] leading-[20px] ${msg.type === 'user' ? 'text-white' : 'text-on-surface'}`}>{msg.text}</p>
+              <div className="space-y-2 flex-1 min-w-0">
+                <div className={`p-3 shadow-sm ${msg.type === 'user' ? 'bg-primary text-white rounded-2xl rounded-tr-none' : 'bg-white border border-outline-variant rounded-2xl rounded-tl-none'}`}>
+                  <p className={`text-[12px] leading-[18px] ${msg.type === 'user' ? 'text-white' : 'text-on-surface'} break-words`}>{msg.text}</p>
                 </div>
                 
-                {msg.isTable && (
+                {msg.isTable && !isSidebar && (
                   <div className="bg-white border border-outline-variant p-4 rounded-2xl rounded-tl-none shadow-sm space-y-4 mt-2">
                     <div className="overflow-x-auto rounded-lg border border-outline-variant">
                       <table className="w-full text-left border-collapse">
@@ -197,7 +204,7 @@ export default function AICopilot({ language }: Props) {
                   </div>
                 )}
                 
-                {msg.type === 'ai' && (
+                {msg.type === 'ai' && !isSidebar && (
                   <div className="flex items-center gap-4 pl-4">
                     <button className="flex items-center gap-1.5 text-[12px] leading-[16px] tracking-[0.05em] font-semibold text-on-surface-variant hover:text-primary transition-colors">
                       <span className="material-symbols-outlined text-[16px]">thumb_up</span> Helpful
@@ -216,14 +223,14 @@ export default function AICopilot({ language }: Props) {
           
           {/* Typing Indicator */}
           {isTyping && (
-            <div className="flex gap-4 max-w-[90%] animate-pulse">
-              <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white shrink-0">
-                <span className="material-symbols-outlined text-[20px]">smart_toy</span>
+            <div className="flex gap-3 max-w-[90%] animate-pulse">
+              <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center text-white shrink-0">
+                <span className="material-symbols-outlined text-[14px]">smart_toy</span>
               </div>
-              <div className="bg-surface-container-high h-12 w-16 rounded-2xl rounded-tl-none flex items-center justify-center gap-1">
-                <span className="w-2 h-2 bg-on-surface-variant/40 rounded-full"></span>
-                <span className="w-2 h-2 bg-on-surface-variant/40 rounded-full animation-delay-100"></span>
-                <span className="w-2 h-2 bg-on-surface-variant/40 rounded-full animation-delay-200"></span>
+              <div className="bg-surface-container-high h-10 w-14 rounded-2xl rounded-tl-none flex items-center justify-center gap-1">
+                <span className="w-1.5 h-1.5 bg-on-surface-variant/40 rounded-full animate-bounce"></span>
+                <span className="w-1.5 h-1.5 bg-on-surface-variant/40 rounded-full animate-bounce delay-75"></span>
+                <span className="w-1.5 h-1.5 bg-on-surface-variant/40 rounded-full animate-bounce delay-150"></span>
               </div>
             </div>
           )}
@@ -231,7 +238,7 @@ export default function AICopilot({ language }: Props) {
         </div>
 
         {/* Chat Input Area */}
-        <div className="p-6 bg-white border-t border-outline-variant shrink-0">
+        <div className={`${isSidebar ? 'p-3' : 'p-6'} bg-white border-t border-outline-variant shrink-0`}>
           <div className="relative group">
             <textarea 
               value={inputText}
@@ -242,20 +249,17 @@ export default function AICopilot({ language }: Props) {
                   handleSend(inputText);
                 }
               }}
-              className="w-full bg-surface-container-low border border-outline-variant focus:border-primary focus:ring-1 focus:ring-primary rounded-xl py-4 px-4 pr-24 text-[14px] leading-[20px] resize-none transition-all outline-none text-on-surface placeholder:text-on-surface-variant/60" 
-              placeholder={isHi ? "किसी भी जिला सुविधा, दवा या अलर्ट के बारे में पूछें..." : "Ask about any district facility, medicine, or alert..."}
-              rows={2}
+              className="w-full bg-surface-container-low border border-outline-variant focus:border-primary focus:ring-1 focus:ring-primary rounded-xl py-2 px-3 pr-10 text-[12px] leading-[16px] resize-none transition-all outline-none text-on-surface placeholder:text-on-surface-variant/60" 
+              placeholder={isSidebar ? (isHi ? "पूछें..." : "Ask...") : (isHi ? "किसी भी जिला सुविधा, दवा या अलर्ट के बारे में पूछें..." : "Ask about any district facility, medicine, or alert...")}
+              rows={1}
             ></textarea>
-            <div className="absolute right-2 bottom-2 flex items-center gap-2">
-              <button className="p-2 text-on-surface-variant hover:bg-surface-variant rounded-full transition-colors" title="Voice Input">
-                <span className="material-symbols-outlined text-[24px]">mic</span>
-              </button>
+            <div className="absolute right-1 bottom-1 flex items-center gap-1">
               <button 
                 onClick={() => handleSend(inputText)}
-                className="w-10 h-10 bg-primary text-white hover:bg-primary/90 rounded-lg shadow-sm transition-all flex items-center justify-center" 
+                className="w-8 h-8 bg-primary text-white hover:bg-primary/90 rounded-lg shadow-sm transition-all flex items-center justify-center shrink-0" 
                 title="Send message"
               >
-                <span className="material-symbols-outlined text-[20px]">send</span>
+                <span className="material-symbols-outlined text-[16px]">send</span>
               </button>
             </div>
           </div>
