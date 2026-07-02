@@ -1,8 +1,6 @@
 # HealthNexus AI — District Healthcare Operating System
 
-![HealthNexus AI Banner](src/assets/banner.png)
-
-> **Google GDG Hackathon 2024** — AI-powered district health intelligence platform for Alwar, Rajasthan (42 PHCs/CHCs).
+> **Google GDG Hackathon 2025** — AI-powered district health intelligence platform for Alwar, Rajasthan (42 PHCs/CHCs).
 
 [![Built with Gemini](https://img.shields.io/badge/Powered%20by-Gemini%201.5%20Pro-4285F4?logo=google&logoColor=white)](https://ai.google.dev/)
 [![React 19](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=white)](https://react.dev/)
@@ -30,11 +28,11 @@ Rural district health infrastructure in India suffers from **operational blind s
 
 ## 🌟 What HealthNexus AI Does
 
-### 23 Phases of AI Capability — All Shipped
+### 20 Phases of AI Capability — All Shipped
 
 | # | Phase | Key Capability |
 |---|---|---|
-| 1 | Foundation & UX | Material-3 design, multilingual, responsive |
+| 1 | Foundation & UX | Material-3 design, multilingual (EN/हिंदी/Regional), responsive layout |
 | 2 | District Digital Twin | Live Leaflet map of 42 facilities with AI risk markers |
 | 3 | Resource Monitoring | Real-time inventory, beds, staff, footfall KPIs |
 | 4 | AI Risk Engine | Composite 0–100 risk score per facility via Gemini |
@@ -42,21 +40,18 @@ Rural district health infrastructure in India suffers from **operational blind s
 | 6 | Smart Redistribution | Surplus → deficit optimization with transport manifests |
 | 7 | Explainable AI | Every prediction includes confidence, reasoning & action |
 | 8 | Disease Intelligence | Outbreak hotspot detection, cluster heatmaps |
-| 9 | AI Command Center | Central dashboard for district-level operations |
-| 10 | AI Copilot | Natural language administrative query assistant |
+| 9 | AI Command Centre | Executive district-level dashboard with health score |
+| 10 | AI Copilot | Natural language administrative query assistant (own tab) |
 | 11 | Voice Intelligence | Web Speech API + Gemini entity extraction |
 | 12 | Computer Vision | Shelf scan simulation with bounding boxes & confidence |
 | 13 | Resource Simulation | Scenario engine: Dengue / Flood / Heatwave / Strike |
-| 14 | Emergency Response | One-click crisis simulation with automated redistribution |
+| 14 | Crisis Orchestration | Crisis flow drawer with AI-driven redistribution approval |
 | 15 | Intelligent Alerts | Priority-ranked (Critical → Low) notification system |
 | 16 | AI Reporting | jsPDF client-side executive reports & transport manifests |
 | 17 | Performance Analytics | Facility leaderboard with trend indicators & Most Improved |
 | 18 | Autonomous Workflows | Nightly AI timeline: 6 automated overnight tasks |
-| 19 | Security & Audit | Role switcher (Admin / Pharmacist / Doctor) + audit log |
-| 20 | Demo Polish | Guided demo mode, 2G offline resilience |
-| 21 | Executive Intelligence | District health score (0–100), operational priorities |
-| 22 | AI Explainability Panel | "Why this?" evidence-backed reasoning for every AI action |
-| 23 | Demo Story Mode | 6-step guided judge walkthrough — score 71 → 88 live |
+| 19 | Security & Audit | Role switcher (Admin / Pharmacist / Doctor) + immutable audit log |
+| 20 | Executive Intelligence | District health score (0–100), operational priorities, AI summary |
 
 ---
 
@@ -65,6 +60,7 @@ Rural district health infrastructure in India suffers from **operational blind s
 ```mermaid
 graph TD
     A[HealthNexus AI — App.tsx Shell] --> B[Dashboard Tab]
+    A --> COP[AI Copilot Tab]
     A --> C[Inventory Tab]
     A --> D[Patients Tab]
     A --> E[Beds Tab]
@@ -75,22 +71,22 @@ graph TD
     B --> B1[ExecutiveIntelligence]
     B --> B2[DistrictMap — Leaflet]
     B --> B3[DiseaseIntelligence]
-    B --> B4[Crisis Flow — AI Redistribution]
+    B --> B4[Crisis Flow Drawer]
+    B --> B5[Gateway Simulator Modal]
+    B --> B6[Audit Logs Drawer]
 
-    C --> C1[StockScanner — Computer Vision]
-    C --> C2[Pharmacist Portal]
-    C --> C3[ForecastingChart]
+    C --> C1[StockScanner — Computer Vision Drawer]
+    C --> C2[Pharmacist Portal — Forecasting]
 
     H --> H1[ForecastingChart]
     H --> H2[PerformanceAnalytics]
     H --> H3[NightlyWorkflow Timeline]
-    H --> H4[ResourceSimulator]
+    H --> H4[ResourceSimulator Drawer]
     H --> H5[AIExplainability Panel]
 
-    A --> Z1[DemoStoryMode — Fixed Bottom Bar]
-    A --> Z2[VoiceReporter — Floating Mic]
+    A --> Z1[VoiceReporter — Floating Mic]
 
-    B1 & B3 & H5 --> AI[Gemini 1.5 Pro / Flash]
+    B1 & B3 & H5 & COP --> AI[Gemini 1.5 Pro / Flash]
     C1 --> AI
     H4 --> AI
 ```
@@ -116,7 +112,7 @@ graph TD
 
 ```
 src/
-├── App.tsx                         ← Shell: router + tab switcher
+├── App.tsx                         ← Shell: router + tab switcher + all overlay portals
 ├── store.ts                        ← Zustand global store
 ├── ai.ts                           ← Gemini API calls & fallback
 ├── data/
@@ -132,39 +128,44 @@ src/
     │   ├── ExecutiveIntelligence.tsx   ← District health score + actions
     │   ├── DiseaseIntelligence.tsx     ← Outbreak heatmap + alerts
     │   ├── PerformanceAnalytics.tsx    ← Facility leaderboard
-    │   ├── NightlyWorkflow.tsx         ← Autonomous AI timeline
+    │   ├── NightlyWorkflow.tsx         ← Autonomous AI overnight timeline
     │   ├── AIExplainability.tsx        ← "Why this?" evidence panel
-    │   ├── AICopilot.tsx               ← AI Copilot Assistant Panel
-    │   └── DemoStoryMode.tsx           ← Guided judge walkthrough bar
+    │   └── AICopilot.tsx               ← AI Copilot Assistant (own sidebar tab)
     ├── inventory/
-    │   └── StockScanner.tsx        ← Computer vision shelf scan
+    │   └── StockScanner.tsx        ← Computer vision shelf scan (modal)
     ├── simulation/
-    │   └── ResourceSimulator.tsx   ← Scenario engine: Before vs After
+    │   └── ResourceSimulator.tsx   ← Scenario engine: Before vs After (modal)
     └── voice/
         └── VoiceReporter.tsx       ← Speech-to-text + Gemini NER
 ```
 
 ---
 
-## 🖥️ Screenshots
+## 🖥️ Key Screens
 
-### 📊 District Overview & AI Command Centre
-![District Overview](src/assets/screens/district_overview.png)
+### 📊 District Command Centre & AI Telemetry
+The executive dashboard shows the District Health Score, active crisis alerts, facility map, disease intelligence clusters, and provides one-click AI report generation.
+
+### 🤖 AI Copilot
+A dedicated sidebar tab housing the natural-language AI assistant — ask operational questions, get evidence-backed recommendations, all powered by Gemini.
 
 ### 📦 Drug Inventory & Smart Redistribution
-![Inventory & Forecasting](src/assets/screens/inventory_forecasting.png)
+The pharmacist portal shows stock levels, AI demand forecasts, and enables the AI Shelf Scanner (computer vision modal) to detect low-stock items.
 
 ### 🛏️ Bed Availability & ICU Monitor
-![Bed Management](src/assets/screens/bed_management.png)
+Real-time bed occupancy across all 42 facilities with critical threshold highlighting and AI-suggested inter-facility routing.
 
 ### 👥 Patient Flow & Triage Queue
-![Patient Flow](src/assets/screens/patient_flow.png)
+Live triage registration form (slide-over drawer), patient footfall KPIs, and AI-prioritised queue management.
 
-### 📋 Biometric Staff Roster
-![Staff Attendance](src/assets/screens/staff_attendance.png)
+### 📋 Staff Attendance & Rostering
+Biometric sync simulation, attendance rates, and staffing gap alerts.
 
-### 🔬 Diagnostic IoT Labs Audit
-![Diagnostics Lab](src/assets/screens/diagnostics_lab.png)
+### 🔬 Diagnostic Lab Audit
+Reagent stock tracking and equipment uptime monitoring across district labs.
+
+### 📈 Analytics & AI Modelling
+Forecasting charts, facility performance leaderboard, nightly workflow timeline, resource epidemic simulation sandbox, and the AI Explainability panel.
 
 ---
 
@@ -193,7 +194,7 @@ Edit `.env`:
 ```env
 VITE_GEMINI_API_KEY=your_gemini_api_key_here
 ```
-> **No API key?** The app gracefully falls back to a local AI simulation for offline demo use — full functionality, zero network dependency.
+> **No API key?** The app gracefully falls back to a local AI simulation for offline demo — full functionality, zero network dependency.
 
 ### 4. Run
 ```bash
@@ -209,24 +210,27 @@ npm run build
 
 ---
 
-## 🎥 The Killer Demo — Judge Walkthrough
+## 🎥 Navigating the App
 
-The **Demo Story Mode bar** at the bottom of the screen guides you through 6 steps automatically. Here's what each step reveals:
-
-| Step | Action | What Judges See |
+| Tab | Who Uses It | What to Show |
 |---|---|---|
-| 1 | **Live District Status** | 42 facilities on map, Health Score 71/100, 3 critical alerts |
-| 2 | **AI Detects Crisis** | Amoxicillin stock-out warning + Dengue cluster in Tijara |
-| 3 | **Computer Vision Scan** | AI shelf scan detects 3 low-stock items with bounding boxes |
-| 4 | **Execute AI Response** | One click — redistribution dispatched, alerts sent |
-| 5 | **Simulation Results** | Dengue scenario Before → After: risk score drops live |
-| 6 | **Impact: Score 88/100** | District Health Score climbs **71 → 88**, ₹45k cost saved |
+| **District Dashboard** | District Admin | Map, health score, crisis flow drawer, AI report button |
+| **AI Copilot** | Any role | Type a query — Gemini answers with evidence |
+| **Inventory** | Pharmacist | Stock levels, AI Scanner modal, forecasting chart |
+| **Patient Flow** | Doctor / MO | Triage intake drawer, queue analytics |
+| **Bed Management** | Admin | Occupancy matrix, inter-facility routing |
+| **Staff Attendance** | Admin | Biometric roster, attendance KPIs |
+| **Diagnostic Tests** | Lab staff | Reagent stock, equipment uptime |
+| **Analytics & AI** | Admin | Forecasting, simulation sandbox, explainability |
 
-### Manual Demo Tips
-- **Language Toggle:** Switch EN → हिंदी → Regional in the header
-- **Voice Input:** Tap the microphone button — speak a facility update in any language
-- **Offline Mode:** Toggle "Online" → "Offline" to demonstrate 2G resilience
-- **AI Explainability:** Open Analytics → "AI Decision Explainability Panel" to show evidence
+### Live Demo Tips
+- **Language Toggle:** Click the 🌐 translate circle button (top-right) — switch EN → हिंदी → Regional
+- **Voice Input:** Tap the floating microphone — speak a facility update in any language
+- **Offline Mode:** Toggle `Online (NHM Synced)` → `Offline (Cache Active)` to demonstrate 2G resilience
+- **Role Switcher:** Switch Admin / Pharmacist / Doctor in the top navbar to see role-gated views
+- **Crisis Flow:** On the Dashboard, click **"Execute AI Response"** to trigger the crisis orchestration drawer
+- **Gateway Simulator:** Click **"Gateway Simulator"** at the bottom of the Dashboard to simulate USSD/Biometric feeds
+- **Audit Logs:** Click **"View Audit Logs"** to inspect the immutable event log drawer
 
 ---
 
@@ -259,11 +263,11 @@ interface AIOutput {
 | Criterion (Weight) | How HealthNexus AI Addresses It |
 |---|---|
 | **AI/Technical Execution (25%)** | Gemini powers risk scoring, forecasting, redistribution, voice NER, and report generation — all with real API calls and graceful fallback |
-| **Deployability/Scalability (25%)** | PWA with offline cache, modular architecture, Zustand offline queue, 2G-compatible bundle (~280 KB gzip) |
+| **Deployability/Scalability (25%)** | PWA with offline cache, modular `src/modules/` architecture, Zustand offline queue, 2G-compatible bundle (~280 KB gzip) |
 | **Problem-Solution Fit (20%)** | Every feature maps directly to a documented PHC/CHC operational pain point (stock-outs, bed crunch, outbreak blindspots) |
 | **Inclusivity (15%)** | EN/हिंदी/Regional language support, voice input, low-bandwidth mode, accessible WCAG contrast |
 | **Impact Potential (10%)** | Scales to 42+ facilities; Scenario simulator demonstrates district-level coordination impact |
-| **Presentation (5%)** | Demo Story Mode walks non-technical judges through the full narrative in under 5 minutes |
+| **Presentation (5%)** | Role-based views and live overlays let any judge explore the full narrative in under 5 minutes |
 
 ---
 
@@ -271,7 +275,7 @@ interface AIOutput {
 
 ```bash
 # TypeScript strict check
-npx tsc -b           # 0 errors, 239 modules
+npx tsc -b           # 0 errors, 238+ modules
 
 # Production build
 npm run build        # PWA + Workbox generated
@@ -282,12 +286,14 @@ npm run lint
 
 - **0 TypeScript errors** (strict mode)
 - **PWA** — installable, offline-first, Workbox precache
-- **Security** — role-based access, audit log, no raw PII in state
+- **Modular architecture** — every feature isolated in `src/modules/<domain>/`
+- **Security** — role-based access, immutable audit log, no raw PII in state
+- **Overlay system** — all drawers & modals rendered via React Portal to `document.body` for correct z-index layering
 
 ---
 
 ## 📜 License
 
-MIT License — Built with ❤️ for the **Google GDG Hackathon 2024**.
+MIT License — Built with ❤️ for the **Google GDG Hackathon 2026**.
 
-> *"From 71 to 88 — one AI response, lives protected."*
+> *"From reactive ledgers to an AI-orchestrated district — HealthNexus AI."*
