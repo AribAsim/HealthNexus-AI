@@ -1,6 +1,8 @@
 # HealthNexus AI — District Healthcare Operating System
 
-> **Google GDG Hackathon 2025** — AI-powered district health intelligence platform for Alwar, Rajasthan (42 PHCs/CHCs).
+![HealthNexus AI Banner](src/assets/banner.png)
+
+> **Google GDG Hackathon 2026** — AI-powered district health intelligence platform for Alwar, Rajasthan (42 PHCs/CHCs).
 
 [![Built with Gemini](https://img.shields.io/badge/Powered%20by-Gemini%201.5%20Pro-4285F4?logo=google&logoColor=white)](https://ai.google.dev/)
 [![React 19](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=white)](https://react.dev/)
@@ -141,31 +143,25 @@ src/
 
 ---
 
-## 🖥️ Key Screens
+## 🖥️ Screenshots
 
-### 📊 District Command Centre & AI Telemetry
-The executive dashboard shows the District Health Score, active crisis alerts, facility map, disease intelligence clusters, and provides one-click AI report generation.
-
-### 🤖 AI Copilot
-A dedicated sidebar tab housing the natural-language AI assistant — ask operational questions, get evidence-backed recommendations, all powered by Gemini.
+### 📊 District Overview & AI Command Centre
+![District Overview](src/assets/screens/district_overview.png)
 
 ### 📦 Drug Inventory & Smart Redistribution
-The pharmacist portal shows stock levels, AI demand forecasts, and enables the AI Shelf Scanner (computer vision modal) to detect low-stock items.
+![Inventory & Forecasting](src/assets/screens/inventory_forecasting.png)
 
 ### 🛏️ Bed Availability & ICU Monitor
-Real-time bed occupancy across all 42 facilities with critical threshold highlighting and AI-suggested inter-facility routing.
+![Bed Management](src/assets/screens/bed_management.png)
 
 ### 👥 Patient Flow & Triage Queue
-Live triage registration form (slide-over drawer), patient footfall KPIs, and AI-prioritised queue management.
+![Patient Flow](src/assets/screens/patient_flow.png)
 
-### 📋 Staff Attendance & Rostering
-Biometric sync simulation, attendance rates, and staffing gap alerts.
+### 📋 Biometric Staff Roster
+![Staff Attendance](src/assets/screens/staff_attendance.png)
 
-### 🔬 Diagnostic Lab Audit
-Reagent stock tracking and equipment uptime monitoring across district labs.
-
-### 📈 Analytics & AI Modelling
-Forecasting charts, facility performance leaderboard, nightly workflow timeline, resource epidemic simulation sandbox, and the AI Explainability panel.
+### 🔬 Diagnostic IoT Labs Audit
+![Diagnostics Lab](src/assets/screens/diagnostics_lab.png)
 
 ---
 
